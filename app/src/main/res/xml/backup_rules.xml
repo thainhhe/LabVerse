@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+   Sample backup rules file; uncomment and customize as necessary.
+   See https://developer.android.com/guide/topics/data/autobackup
+   for details.
+   Note: This file is ignored for devices older that API 31
+   See https://developer.android.com/about/versions/12/backup-restore
+-->
+<full-backup-content>
+    <!-- Include user preferences -->
+    <include domain="sharedpref" path="user_preferences.xml" />
+
+    <!-- Include app database -->
+    <include domain="database" path="labverse_database.db" />
+    <include domain="database" path="labverse_database.db-wal" />
+    <include domain="database" path="labverse_database.db-shm" />
+
+    <!-- Include user annotations -->
+    <include domain="external" path="annotations/" />
+
+    <!-- Include exported data -->
+    <include domain="external" path="exports/" />
+
+    <!-- Exclude authentication tokens for security -->
+    <exclude domain="sharedpref" path="LabVerseAuth.xml" />
+
+    <!-- Exclude cache files -->
+    <exclude domain="cache" />
+
+    <!-- Exclude large PDF files -->
+    <exclude domain="external" path="pdfs/" />
+
+    <!-- Exclude temporary files -->
+    <exclude domain="files" path="temp/" />
+</full-backup-content>

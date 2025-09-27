@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:rippleColor="?attr/colorPrimary">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Collection Icon -->
+        <ImageView
+            android:id="@+id/iv_collection_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_circle_light"
+            android:contentDescription="Collection Icon"
+            android:padding="12dp"
+            android:src="@drawable/ic_collections"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/colorPrimary" />
+
+        <!-- Collection Name -->
+        <TextView
+            android:id="@+id/tv_collection_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:text="AI Research Collection"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toStartOf="@+id/iv_visibility"
+            app:layout_constraintStart_toEndOf="@+id/iv_collection_icon"
+            app:layout_constraintTop_toTopOf="@+id/iv_collection_icon" />
+
+        <!-- Visibility Icon -->
+        <ImageView
+            android:id="@+id/iv_visibility"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="Visibility"
+            android:src="@drawable/ic_public"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_collection_name"
+            app:tint="@color/text_secondary" />
+
+        <!-- Collection Description -->
+        <TextView
+            android:id="@+id/tv_collection_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
+            android:text="Collection of papers related to artificial intelligence and machine learning research"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/iv_collection_icon"
+            app:layout_constraintTop_toBottomOf="@+id/tv_collection_name" />
+
+        <!-- Created By -->
+        <TextView
+            android:id="@+id/tv_created_by"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:text="Created by Dr. John Smith"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:drawableStart="@drawable/ic_person_small"
+            android:drawablePadding="4dp"
+            android:gravity="center_vertical"
+            app:layout_constraintStart_toEndOf="@+id/iv_collection_icon"
+            app:layout_constraintTop_toBottomOf="@+id/tv_collection_description"
+            app:drawableTint="@color/text_secondary" />
+
+        <!-- Paper Count -->
+        <TextView
+            android:id="@+id/tv_paper_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_count_tag"
+            android:padding="6dp"
+            android:text="15 papers"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/iv_collection_icon" />
+
+        <!-- Access Level -->
+        <TextView
+            android:id="@+id/tv_access_level"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_access_tag"
+            android:padding="6dp"
+            android:text="ADMIN"
+            android:textColor="@android:color/white"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/tv_paper_count"
+            app:layout_constraintTop_toBottomOf="@+id/iv_collection_icon" />
+
+        <!-- Date Created -->
+        <TextView
+            android:id="@+id/tv_date_created"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Created Jan 15, 2024"
+            android:textColor="@color/text_hint"
+            android:textSize="11sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_paper_count" />
+
+        <!-- More Options Button -->
+        <ImageView
+            android:id="@+id/iv_more_options"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginTop="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="More Options"
+            android:padding="4dp"
+            android:src="@drawable/ic_more_vert"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_date_created"
+            app:tint="@color/text_secondary" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

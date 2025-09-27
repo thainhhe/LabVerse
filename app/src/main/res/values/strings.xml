@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LabVerse</string>
+    <string name="app_subtitle">Research Paper Management System</string>
+
+    <!-- Authentication -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="full_name">Full Name</string>
+    <string name="affiliation">Affiliation</string>
+    <string name="role">Role</string>
+    <string name="dont_have_account">Don\'t have an account? Register</string>
+    <string name="already_have_account">Already have an account? Login</string>
+
+    <!-- Navigation -->
+    <string name="dashboard">Dashboard</string>
+    <string name="discover">Discover</string>
+    <string name="collections">Collections</string>
+    <string name="profile">Profile</string>
+
+    <!-- Paper Management -->
+    <string name="add_paper">Add Paper</string>
+    <string name="import_paper">Import Paper</string>
+    <string name="upload_pdf">Upload PDF</string>
+    <string name="import_bibtex">Import BibTeX</string>
+    <string name="manual_entry">Manual Entry</string>
+    <string name="paper_title">Paper Title</string>
+    <string name="authors">Authors</string>
+    <string name="journal">Journal</string>
+    <string name="year">Year</string>
+    <string name="doi">DOI</string>
+    <string name="abstract_text">Abstract</string>
+
+    <!-- Status -->
+    <string name="unread">Unread</string>
+    <string name="reading">Reading</string>
+    <string name="finished">Finished</string>
+
+    <!-- Priority -->
+    <string name="high_priority">High Priority</string>
+    <string name="medium_priority">Medium Priority</string>
+    <string name="low_priority">Low Priority</string>
+
+    <!-- Collections -->
+    <string name="create_collection">Create Collection</string>
+    <string name="collection_name">Collection Name</string>
+    <string name="collection_description">Description</string>
+    <string name="public_collection">Public Collection</string>
+    <string name="private_collection">Private Collection</string>
+
+    <!-- Profile -->
+    <string name="edit_profile">Edit Profile</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
+
+    <!-- Tabs -->
+    <string name="recently_added">Recently Added</string>
+    <string name="recently_read">Recently Read</string>
+    <string name="favorites">Favorites</string>
+
+    <!-- Actions -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="share">Share</string>
+    <string name="search">Search</string>
+    <string name="filter">Filter</string>
+
+    <!-- Messages -->
+    <string name="loading">Loading...</string>
+    <string name="no_papers_found">No papers found</string>
+    <string name="no_collections_found">No collections found</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="success">Success</string>
+
+    <!-- User Roles -->
+    <string-array name="user_roles">
+        <item>Student/Intern</item>
+        <item>PhD Student</item>
+        <item>Postdoc</item>
+        <item>Researcher</item>
+        <item>Principal Investigator</item>
+        <item>Lab Head</item>
+    </string-array>
+</resources>

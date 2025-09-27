@@ -138,3 +138,4 @@ public class ImportPaperActivity extends AppCompatActivity {
         onBackPressed();
         return true;
     }
+}

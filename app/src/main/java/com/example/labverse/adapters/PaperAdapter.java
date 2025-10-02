@@ -71,6 +71,9 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
     }
 
     private void setStatusIndicator(PaperViewHolder holder, String status) {
+        if (status == null) {
+            status = "unknown"; // Default to unknown if status is null
+        }
         switch (status.toLowerCase()) {
             case "unread":
                 holder.viewStatusIndicator.setBackgroundColor(ContextCompat.getColor(context, R.color.status_unread));
@@ -90,6 +93,7 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
             default:
                 holder.viewStatusIndicator.setBackgroundColor(ContextCompat.getColor(context, R.color.status_unread));
                 holder.tvStatus.setText("Unknown");
+                holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.status_unread));
                 break;
         }
     }

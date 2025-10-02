@@ -1,27 +1,23 @@
 package com.example.labverse;
 
-import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import com.example.labverse.activities.ImportPaperActivity;
+import com.example.labverse.fragments.CollectionsFragment;
 import com.example.labverse.fragments.DashboardFragment;
 import com.example.labverse.fragments.DiscoverFragment;
-import com.example.labverse.fragments.CollectionsFragment;
 import com.example.labverse.fragments.ProfileFragment;
-import com.example.labverse.activities.ImportPaperActivity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
@@ -32,6 +28,26 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // --- PHẦN THÊM MỚI ---
+        // Thiết lập Toolbar làm Action Bar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Xử lý sự kiện click vào Toolbar (bao gồm cả logo/tiêu đề)
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Chỉ thực hiện khi fragment hiện tại không phải là Dashboard
+                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+                if (!(currentFragment instanceof DashboardFragment)) {
+                    loadFragment(new DashboardFragment());
+                    bottomNavigationView.setSelectedItemId(R.id.nav_dashboard); // Cập nhật mục được chọn
+                    Toast.makeText(MainActivity.this, "Returning to Home", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        // --- KẾT THÚC PHẦN THÊM MỚI ---
 
         initViews();
         setupBottomNavigation();
@@ -62,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Fragment fragment = null;
-
         int itemId = item.getItemId();
         if (itemId == R.id.nav_dashboard) {
             fragment = new DashboardFragment();
@@ -73,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         } else if (itemId == R.id.nav_profile) {
             fragment = new ProfileFragment();
         }
-
         return loadFragment(fragment);
     }
 

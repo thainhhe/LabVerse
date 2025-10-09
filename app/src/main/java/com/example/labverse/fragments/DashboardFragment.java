@@ -13,23 +13,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.labverse.R;
-import com.example.labverse.adapters.PaperAdapter;
-import com.example.labverse.models.Paper;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.example.labverse.adapters.DashboardPagerAdapter;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 public class DashboardFragment extends Fragment {
 
-    private RecyclerView recyclerView;
-    private SwipeRefreshLayout swipeRefreshLayout;
-    private PaperAdapter paperAdapter;
-    private List<Paper> paperList;
+    private TabLayout tabLayout;
+    private ViewPager2 viewPager;
+    private DashboardPagerAdapter pagerAdapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,42 +35,34 @@ public class DashboardFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
-        initViews(view);
-        setupRecyclerView();
-        loadPapers();
-        return view;
+        return inflater.inflate(R.layout.fragment_dashboard, container, false);
     }
 
-    // ... (Các hàm initViews, setupRecyclerView, loadPapers, loadMockPapers giữ nguyên)
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-    private void initViews(View view) {
-        recyclerView = view.findViewById(R.id.recycler_view_papers);
-        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
-        swipeRefreshLayout.setOnRefreshListener(this::loadPapers);
+        tabLayout = view.findViewById(R.id.tab_layout);
+        viewPager = view.findViewById(R.id.view_pager);
+
+        pagerAdapter = new DashboardPagerAdapter(getChildFragmentManager(), getLifecycle());
+        viewPager.setAdapter(pagerAdapter);
+
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            switch (position) {
+                case 0:
+                    tab.setText("Recently Added");
+                    break;
+                case 1:
+                    tab.setText("Recently Read");
+                    break;
+                case 2:
+                    tab.setText("Favorites");
+                    break;
+            }
+        }).attach();
     }
 
-    private void setupRecyclerView() {
-        paperList = new ArrayList<>();
-        paperAdapter = new PaperAdapter(paperList, getContext());
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(paperAdapter);
-    }
-
-    private void loadPapers() {
-        loadMockPapers();
-        swipeRefreshLayout.setRefreshing(false);
-    }
-
-    private void loadMockPapers() {
-        paperList.clear();
-        paperList.add(new Paper("1", "Deep Learning for Natural Language Processing", "John Smith, Jane Doe", "Nature Machine Intelligence", "2024", "unread"));
-        paperList.add(new Paper("2", "Advances in Computer Vision Applications", "Alice Johnson, Bob Wilson", "IEEE Transactions on Pattern Analysis", "2024", "reading"));
-        paperList.add(new Paper("3", "Machine Learning in Healthcare: A Comprehensive Review", "Carol Davis, David Brown", "Journal of Medical Internet Research", "2023", "finished"));
-        paperAdapter.notifyDataSetChanged();
-    }
-
-    // --- PHẦN CẬP NHẬT ---
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -88,22 +75,21 @@ public class DashboardFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 Toast.makeText(getContext(), "Searching for: " + query, Toast.LENGTH_SHORT).show();
-                // TODO: Gọi hàm lọc danh sách với từ khóa "query"
+                // TODO: Implement search logic across all tabs or the current tab
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // TODO: (Tùy chọn) Lọc danh sách ngay khi người dùng gõ
+                // Optional: Implement live search
                 return true;
             }
         });
     }
 
-    // Phương thức này không còn cần thiết vì logic đã được chuyển vào onCreateOptionsMenu
-    // nhưng bạn có thể giữ lại để xử lý các item menu khác trong tương lai.
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        // Handle other menu item clicks if any
         return super.onOptionsItemSelected(item);
     }
 }

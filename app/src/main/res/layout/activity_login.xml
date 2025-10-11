@@ -81,26 +81,105 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
+        <!-- Forgot Password -->
+        <TextView
+            android:id="@+id/tv_forgot_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Forgot Password?"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/til_password" />
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_forgot_password" />
+
+        <!-- Login Button -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_login"
             android:layout_width="0dp"
             android:layout_height="56dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="24dp"
             android:text="Login"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/til_password" />
+            app:layout_constraintTop_toBottomOf="@+id/progress_bar" />
 
+        <!-- Divider -->
+        <View
+            android:id="@+id/divider_left"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="16dp"
+            android:background="@color/divider"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_or"
+            app:layout_constraintEnd_toStartOf="@+id/tv_or"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_or" />
+
+        <TextView
+            android:id="@+id/tv_or"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="OR"
+            android:textColor="@color/text_secondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btn_login" />
+
+        <View
+            android:id="@+id/divider_right"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="16dp"
+            android:background="@color/divider"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_or"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tv_or"
+            app:layout_constraintTop_toTopOf="@+id/tv_or" />
+
+        <!-- Google Sign-In Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_google_sign_in"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="24dp"
+            android:text="Sign in with Google"
+            android:textColor="@color/text_primary"
+            app:icon="@drawable/ic_google"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconTint="@null"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_or" />
+
+        <!-- Register Link -->
         <TextView
             android:id="@+id/tv_register"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Don't have an account? Register"
+            android:layout_marginBottom="24dp"
+            android:text="@string/dont_have_account"
             android:textColor="?attr/colorPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btn_login" />
+            app:layout_constraintTop_toBottomOf="@+id/btn_google_sign_in" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

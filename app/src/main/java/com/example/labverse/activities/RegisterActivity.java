@@ -48,7 +48,7 @@ public class RegisterActivity extends AppCompatActivity {
         spinnerRole = findViewById(R.id.spinner_role);
         btnRegister = findViewById(R.id.btn_register);
         tvLogin = findViewById(R.id.tv_login);
-        progressBar = findViewById(R.id.progress_bar);
+        progressBar = findViewById(R.id.progress_bar_register);
     }
 
     private void setupRoleSpinner() {

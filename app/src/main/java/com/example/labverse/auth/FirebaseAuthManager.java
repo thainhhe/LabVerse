@@ -53,6 +53,8 @@ public class FirebaseAuthManager {
 
     // ==================== EMAIL/PASSWORD AUTHENTICATION ====================
 
+    // Thay thế toàn bộ phương thức registerWithEmail của bạn bằng phương thức này
+
     public void registerWithEmail(String email, String password, String fullName,
                                   String affiliation, String role,
                                   AuthCallback callback) {
@@ -66,19 +68,24 @@ public class FirebaseAuthManager {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser firebaseUser = auth.getCurrentUser();
-                        if (firebaseUser != null) {
-                            // Send email verification
-                            firebaseUser.sendEmailVerification()
-                                    .addOnCompleteListener(verifyTask -> {
-                                        if (verifyTask.isSuccessful()) {
-                                            Log.d(TAG, "Verification email sent");
-                                        }
-                                    });
-
-                            // Create user profile in Firestore
-                            String userId = firebaseUser.getUid();
-                            createUserProfile(userId, email, fullName, affiliation, role, callback);
+                        if (firebaseUser == null) {
+                            callback.onFailure("Failed to get user after creation.");
+                            return;
                         }
+
+                        // BƯỚC 1: Gửi email xác thực
+                        firebaseUser.sendEmailVerification()
+                                .addOnCompleteListener(verificationTask -> {
+                                    if (verificationTask.isSuccessful()) {
+                                        // BƯỚC 2: SAU KHI GỬI EMAIL THÀNH CÔNG, MỚI TẠO PROFILE
+                                        Log.d(TAG, "Verification email sent successfully.");
+                                        String userId = firebaseUser.getUid();
+                                        createUserProfile(userId, email, fullName, affiliation, role, callback);
+                                    } else {
+                                        // Xử lý lỗi nếu không gửi được email
+                                        callback.onFailure("User created, but failed to send verification email: " + verificationTask.getException().getMessage());
+                                    }
+                                });
                     } else {
                         callback.onFailure(task.getException().getMessage());
                     }

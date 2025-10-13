@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Mục User Profile -->
+    <item
+        android:id="@+id/action_profile"
+        android:title="User Profile"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        app:showAsAction="ifRoom" />
+
+    <!-- Mục Settings -->
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"
+        android:icon="@android:drawable/ic_menu_manage"
+        app:showAsAction="never" />
+
+    <!-- Mục Logout -->
+    <item
+        android:id="@+id/action_logout"
+        android:title="Logout"
+        app:showAsAction="never" />
+
+</menu>

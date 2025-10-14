@@ -56,7 +56,8 @@
         <activity
             android:name=".activities.ImportPaperActivity"
             android:exported="false"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.LabVerse.NoActionBar"/>
 
         <activity
             android:name=".activities.PaperDetailActivity"
@@ -81,7 +82,8 @@
         <activity
             android:name=".activities.EditProfileActivity"
             android:exported="false"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.LabVerse.NoActionBar"/>
 
         <activity
             android:name=".activities.ManualEntryActivity"

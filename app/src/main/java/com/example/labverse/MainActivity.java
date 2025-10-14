@@ -68,34 +68,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         });
     }
 
-    // Phương thức này sẽ tạo menu trên Toolbar
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
 
-    // Phương thức này xử lý khi một item trong menu được chọn
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
 
-        if (itemId == R.id.action_profile) {
-            // Chuyển đến màn hình Profile
-            // startActivity(new Intent(this, ProfileActivity.class));
-            return true;
-        } else if (itemId == R.id.action_settings) {
-            // Chuyển đến màn hình Settings
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
-        } else if (itemId == R.id.action_logout) {
-            // Xử lý logout
-            logoutUser();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
     private void setupBottomNavigation() {
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
     }

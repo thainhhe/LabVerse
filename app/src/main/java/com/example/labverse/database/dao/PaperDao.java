@@ -1,23 +1,41 @@
 package com.example.labverse.database.dao;
 
 import androidx.lifecycle.LiveData;
-import androidx.room.*;
+import androidx.room.Dao;
+import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
+import androidx.room.Query;
+import androidx.room.Update;
 import com.example.labverse.database.entities.PaperEntity;
 import java.util.List;
 
 @Dao
 public interface PaperDao {
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertPapers(List<PaperEntity> papers);
+
+    @Query("SELECT * FROM papers ORDER BY date_added DESC LIMIT 50")
+    LiveData<List<PaperEntity>> getRecentlyAdded();
+
+    @Query("SELECT * FROM papers WHERE last_read IS NOT NULL ORDER BY last_read DESC LIMIT 50")
+    LiveData<List<PaperEntity>> getRecentlyRead();
+
+    @Query("SELECT * FROM papers WHERE is_favorite = 1 ORDER BY date_added DESC")
+    LiveData<List<PaperEntity>> getFavorites();
+
+    @Query("UPDATE papers SET status = :status, last_read = CASE WHEN :status = 'reading' THEN :timestamp ELSE last_read END WHERE paper_id = :paperId")
+    void updateReadingStatus(String paperId, String status, long timestamp);
+
+    @Query("UPDATE papers SET is_favorite = NOT is_favorite WHERE paper_id = :paperId")
+    void toggleFavorite(String paperId);
+
+    // Keeping existing methods
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(PaperEntity paper);
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertAll(List<PaperEntity> papers);
-
     @Update
     void update(PaperEntity paper);
-
-    @Delete
-    void delete(PaperEntity paper);
 
     @Query("SELECT * FROM papers WHERE user_id = :userId ORDER BY date_added DESC")
     LiveData<List<PaperEntity>> getAllPapersByUser(String userId);
@@ -45,9 +63,6 @@ public interface PaperDao {
 
     @Query("SELECT * FROM papers WHERE user_id = :userId AND sync_status = :status")
     List<PaperEntity> getPapersBySyncStatus(String userId, String status);
-
-    @Query("UPDATE papers SET status = :status WHERE paper_id = :paperId")
-    void updateStatus(String paperId, String status);
 
     @Query("UPDATE papers SET priority = :priority WHERE paper_id = :paperId")
     void updatePriority(String paperId, String priority);

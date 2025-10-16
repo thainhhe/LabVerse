@@ -8,26 +8,28 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.labverse.MainActivity;
 import com.example.labverse.R;
 import com.example.labverse.adapters.PaperAdapter;
+import com.example.labverse.database.entities.PaperEntity;
 import com.example.labverse.models.Paper;
+import com.example.labverse.utils.PaperMapper;
+import com.example.labverse.viewmodels.LibraryViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-public class RecentlyAddedFragment extends Fragment implements MainActivity.SearchListener {
+public class RecentlyAddedFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private PaperAdapter paperAdapter;
-    private List<Paper> paperList;
-    private List<Paper> filteredPaperList;
+    private LibraryViewModel viewModel;
+    private List<Paper> paperList = new ArrayList<>();
 
     @Nullable
     @Override
@@ -38,77 +40,44 @@ public class RecentlyAddedFragment extends Fragment implements MainActivity.Sear
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
 
         setupRecyclerView();
-        loadPapers();
 
-        swipeRefreshLayout.setOnRefreshListener(this::loadPapers);
+        swipeRefreshLayout.setOnRefreshListener(() -> viewModel.refreshData());
 
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // Scoping the ViewModel to the parent fragment (DashboardFragment) or Activity
+        viewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
+        observeViewModel();
+    }
+
     private void setupRecyclerView() {
-        paperList = new ArrayList<>();
-        filteredPaperList = new ArrayList<>();
-        paperAdapter = new PaperAdapter(filteredPaperList, getContext());
+        paperAdapter = new PaperAdapter(paperList, getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(paperAdapter);
     }
 
-    private void loadPapers() {
-        // TODO: Implement logic to load recently added papers from the database
-        swipeRefreshLayout.setRefreshing(true);
-        paperList.clear();
-        
-        // Mock data for testing
-        long currentTime = System.currentTimeMillis();
-        paperList.add(new Paper("1", "The impact of AI on software development", "John Doe", "IEEE Software", "2023", "reading"));
-        paperList.get(0).setLastRead(currentTime - TimeUnit.HOURS.toMillis(2));
-        paperList.get(0).setFavorite(true);
+    private void observeViewModel() {
+        viewModel.getRecentlyAdded().observe(getViewLifecycleOwner(), paperEntities -> {
+            if (paperEntities != null) {
+                updatePaperList(paperEntities);
+            }
+        });
 
-        paperList.add(new Paper("2", "A new approach to quantum computing", "Jane Smith", "Nature Physics", "2022", "unread"));
-
-        paperList.add(new Paper("3", "Machine Learning in Healthcare", "Emily White", "The Lancet", "2023", "finished"));
-        paperList.get(2).setLastRead(currentTime - TimeUnit.DAYS.toMillis(5));
-
-
-        paperList.add(new Paper("4", "The future of mobile applications", "Michael Brown", "ACM", "2021", "reading"));
-        paperList.get(3).setLastRead(currentTime - TimeUnit.MINUTES.toMillis(30));
-
-        paperList.add(new Paper("5", "Cybersecurity in the IoT era", "Chris Green", "WIRED", "2023", "unread"));
-        paperList.get(4).setFavorite(true);
-
-        paperList.add(new Paper("6", "A study on renewable energy sources", "Jessica Blue", "Energy Journal", "2020", "finished"));
-        paperList.get(5).setLastRead(currentTime - TimeUnit.DAYS.toMillis(10));
-
-        paperList.add(new Paper("7", "The role of blockchain in finance", "David Black", "Journal of Finance", "2023", "reading"));
-        paperList.get(6).setLastRead(currentTime - TimeUnit.DAYS.toMillis(1));
-
-
-        paperList.add(new Paper("8", "Exploring the depths of the ocean", "Olivia Purple", "National Geographic", "2019", "unread"));
-
-        paperList.add(new Paper("9", "The psychology of user experience", "William Yellow", "UX Magazine", "2023", "finished"));
-        paperList.get(8).setLastRead(currentTime - TimeUnit.DAYS.toMillis(14));
-        paperList.get(8).setFavorite(true);
-
-        paperList.add(new Paper("10", "Advancements in gene editing", "Sophia Orange", "Science", "2023", "reading"));
-        paperList.get(9).setLastRead(currentTime - TimeUnit.HOURS.toMillis(5));
-
-        performSearch("");
-        swipeRefreshLayout.setRefreshing(false);
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            if (isLoading != null) {
+                swipeRefreshLayout.setRefreshing(isLoading);
+            }
+        });
     }
 
-    @Override
-    public void performSearch(String query) {
-        filteredPaperList.clear();
-        if (query.isEmpty()) {
-            filteredPaperList.addAll(paperList);
-        } else {
-            for (Paper paper : paperList) {
-                if (paper.getTitle().toLowerCase().contains(query.toLowerCase()) ||
-                        paper.getAuthors().toLowerCase().contains(query.toLowerCase()) ||
-                        paper.getJournal().toLowerCase().contains(query.toLowerCase())) {
-                    filteredPaperList.add(paper);
-                }
-            }
+    private void updatePaperList(List<PaperEntity> paperEntities) {
+        paperList.clear();
+        for (PaperEntity entity : paperEntities) {
+            paperList.add(PaperMapper.fromEntity(entity));
         }
         paperAdapter.notifyDataSetChanged();
     }

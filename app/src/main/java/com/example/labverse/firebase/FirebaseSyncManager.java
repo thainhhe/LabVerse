@@ -39,15 +39,15 @@ public class FirebaseSyncManager {
         FirebasePaper firebasePaper = convertToFirebasePaper(paper);
 
         firestore.collection(PAPERS_COLLECTION)
-                .document(paper.getPaperId())
+                .document(paper.paperId)
                 .set(firebasePaper.toMap())
                 .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Paper synced to Firebase: " + paper.getPaperId());
-                    updateLocalSyncStatus(paper.getPaperId(), "synced");
+                    Log.d(TAG, "Paper synced to Firebase: " + paper.paperId);
+                    updateLocalSyncStatus(paper.paperId, "synced");
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to sync paper: " + e.getMessage());
-                    updateLocalSyncStatus(paper.getPaperId(), "failed");
+                    updateLocalSyncStatus(paper.paperId, "failed");
                 });
     }
 
@@ -168,42 +168,41 @@ public class FirebaseSyncManager {
 
     // ==================== CONVERSION METHODS ====================
     private FirebasePaper convertToFirebasePaper(PaperEntity entity) {
-        FirebasePaper paper = new FirebasePaper(entity.getPaperId(), entity.getUserId(), entity.getTitle());
-        paper.setAuthors(entity.getAuthors());
-        paper.setJournal(entity.getJournal());
-        paper.setYear(entity.getYear());
-        paper.setDoi(entity.getDoi());
-        paper.setAbstractText(entity.getAbstractText());
-        paper.setPdfUrl(entity.getPdfUrl());
-        paper.setStatus(entity.getStatus());
-        paper.setPriority(entity.getPriority());
-        paper.setFavorite(entity.isFavorite());
-        paper.setCurrentPage(entity.getCurrentPage());
-        paper.setTotalPages(entity.getTotalPages());
+        FirebasePaper paper = new FirebasePaper(entity.paperId, entity.userId, entity.title);
+        paper.setAuthors(entity.authors);
+        paper.setJournal(entity.journal);
+        paper.setYear(entity.year);
+        paper.setDoi(entity.doi);
+        paper.setAbstractText(entity.abstractText);
+        paper.setPdfUrl(entity.pdfUrl);
+        paper.setStatus(entity.status);
+        paper.setPriority(entity.priority);
+        paper.setFavorite(entity.isFavorite);
+        paper.setCurrentPage(entity.currentPage);
+        paper.setTotalPages(entity.totalPages);
         return paper;
     }
 
     private PaperEntity convertToPaperEntity(FirebasePaper firebasePaper) {
-        PaperEntity entity = new PaperEntity(
-                firebasePaper.getPaperId(),
-                firebasePaper.getUserId(),
-                firebasePaper.getTitle()
-        );
-        entity.setAuthors(firebasePaper.getAuthors());
-        entity.setJournal(firebasePaper.getJournal());
-        entity.setYear(firebasePaper.getYear());
-        entity.setDoi(firebasePaper.getDoi());
-        entity.setAbstractText(firebasePaper.getAbstractText());
-        entity.setPdfUrl(firebasePaper.getPdfUrl());
-        entity.setStatus(firebasePaper.getStatus());
-        entity.setPriority(firebasePaper.getPriority());
-        entity.setFavorite(firebasePaper.isFavorite());
-        entity.setCurrentPage(firebasePaper.getCurrentPage());
-        entity.setTotalPages(firebasePaper.getTotalPages());
-        entity.setSyncStatus("synced");
-        entity.setLastSync(System.currentTimeMillis());
+        PaperEntity entity = new PaperEntity();
+        entity.paperId = firebasePaper.getPaperId();
+        entity.userId = firebasePaper.getUserId();
+        entity.title = firebasePaper.getTitle();
+        entity.authors = firebasePaper.getAuthors();
+        entity.journal = firebasePaper.getJournal();
+        entity.year = firebasePaper.getYear();
+        entity.doi = firebasePaper.getDoi();
+        entity.abstractText = firebasePaper.getAbstractText();
+        entity.pdfUrl = firebasePaper.getPdfUrl();
+        entity.status = firebasePaper.getStatus();
+        entity.priority = firebasePaper.getPriority();
+        entity.isFavorite = firebasePaper.isFavorite();
+        entity.currentPage = firebasePaper.getCurrentPage();
+        entity.totalPages = firebasePaper.getTotalPages();
+        entity.syncStatus = "synced";
+        entity.lastSync = System.currentTimeMillis();
         if (firebasePaper.getDateAdded() != null) {
-            entity.setDateAdded(firebasePaper.getDateAdded().toDate().getTime());
+            entity.dateAdded = firebasePaper.getDateAdded().toDate().getTime();
         }
         return entity;
     }

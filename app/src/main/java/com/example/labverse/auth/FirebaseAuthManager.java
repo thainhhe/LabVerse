@@ -198,7 +198,7 @@ public class FirebaseAuthManager {
                         String fullName = documentSnapshot.getString("fullName");
                         String affiliation = documentSnapshot.getString("affiliation");
                         String role = documentSnapshot.getString("role");
-
+                        secureAuthManager.saveUserId(userId);
                         // Save to secure storage
                         secureAuthManager.saveUserData(email, fullName, role);
 
@@ -215,17 +215,37 @@ public class FirebaseAuthManager {
                 });
     }
 
-    private void checkAndCreateUserProfile(String userId, String email, String displayName,
+    // ĐÃ SỬA LẠI:
+    private void checkAndCreateUserProfile(String googleUserId, String email, String displayName,
                                            AuthCallback callback) {
-        firestore.collection("users").document(userId)
+        if (email == null || email.isEmpty()) {
+            callback.onFailure("Google account does not have an email.");
+            return;
+        }
+
+        Log.d(TAG, "checkAndCreateUserProfile: Querying Firestore for email: " + email);
+
+        firestore.collection("users")
+                .whereEqualTo("email", email)
+                .limit(1)
                 .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        // User exists, just load profile
-                        loadUserProfile(userId, callback);
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (!task.getResult().isEmpty()) {
+                            com.google.firebase.firestore.DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+                            String existingUserId = documentSnapshot.getId();
+
+                            Log.d(TAG, "User email exists. Loading profile for " + existingUserId);
+                            loadUserProfile(existingUserId, callback);
+
+
+                        } else {
+                            Log.d(TAG, "New user. Creating profile for " + googleUserId);
+                            createUserProfile(googleUserId, email, displayName, "", "Researcher", callback);
+                        }
                     } else {
-                        // New Google user, create profile with default role
-                        createUserProfile(userId, email, displayName, "", "Researcher", callback);
+                        Log.e(TAG, "Lỗi truy vấn Firestore (Firestore query failed): ", task.getException());
+                        callback.onFailure("Failed to check user profile: " + task.getException().getMessage());
                     }
                 });
     }

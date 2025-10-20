@@ -33,6 +33,12 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
         this.paperDao = LabVerseDatabase.getDatabase(context).paperDao();
     }
 
+    public void setPapers(List<Paper> newPaperList) {
+        this.paperList.clear();
+        this.paperList.addAll(newPaperList);
+        notifyDataSetChanged(); // This tells the adapter to refresh the view
+    }
+
     @NonNull
     @Override
     public PaperViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

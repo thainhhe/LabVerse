@@ -10,13 +10,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.labverse.MainActivity;
 import com.example.labverse.R;
 import com.example.labverse.adapters.DashboardPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-public class DashboardFragment extends Fragment implements MainActivity.SearchListener {
+public class DashboardFragment extends Fragment {
 
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
@@ -51,13 +50,5 @@ public class DashboardFragment extends Fragment implements MainActivity.SearchLi
                     break;
             }
         }).attach();
-    }
-
-    @Override
-    public void performSearch(String query) {
-        Fragment fragment = getChildFragmentManager().findFragmentByTag("f" + viewPager.getCurrentItem());
-        if (fragment instanceof MainActivity.SearchListener) {
-            ((MainActivity.SearchListener) fragment).performSearch(query);
-        }
     }
 }

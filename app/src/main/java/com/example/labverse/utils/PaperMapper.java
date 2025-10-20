@@ -2,6 +2,8 @@ package com.example.labverse.utils;
 
 import com.example.labverse.database.entities.PaperEntity;
 import com.example.labverse.models.Paper;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PaperMapper {
 
@@ -24,6 +26,17 @@ public class PaperMapper {
         paper.setDateAdded(entity.dateAdded);
         paper.setLastRead(entity.lastRead);
         return paper;
+    }
+
+    public static List<Paper> fromEntities(List<PaperEntity> entities) {
+        if (entities == null) {
+            return new ArrayList<>();
+        }
+        List<Paper> papers = new ArrayList<>();
+        for (PaperEntity entity : entities) {
+            papers.add(fromEntity(entity));
+        }
+        return papers;
     }
 
     public static PaperEntity toEntity(Paper paper) {

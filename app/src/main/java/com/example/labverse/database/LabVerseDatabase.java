@@ -58,7 +58,7 @@ public abstract class LabVerseDatabase extends RoomDatabase {
                                     LabVerseDatabase.class,
                                     "labverse_database"
                             )
-                            .addCallback(roomCallback)
+                            // The callback that might add sample data has been removed.
                             .fallbackToDestructiveMigration() // For development only
                             .build();
                 }
@@ -66,17 +66,6 @@ public abstract class LabVerseDatabase extends RoomDatabase {
         }
         return INSTANCE;
     }
-
-    private static RoomDatabase.Callback roomCallback = new RoomDatabase.Callback() {
-        @Override
-        public void onCreate(@NonNull SupportSQLiteDatabase db) {
-            super.onCreate(db);
-            // Populate database with initial data if needed
-            databaseWriteExecutor.execute(() -> {
-                // Add initial data here
-            });
-        }
-    };
 
     // Migration strategies (for future versions)
     static final Migration MIGRATION_1_2 = new Migration(1, 2) {

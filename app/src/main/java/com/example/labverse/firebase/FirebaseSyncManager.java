@@ -60,19 +60,27 @@ public class FirebaseSyncManager {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
-                        for (DocumentSnapshot document : task.getResult()) {
-                            FirebasePaper firebasePaper = document.toObject(FirebasePaper.class);
-                            if (firebasePaper != null) {
-                                PaperEntity localPaper = convertToPaperEntity(firebasePaper, userId);
-                                LabVerseDatabase.databaseWriteExecutor.execute(() -> {
-                                    database.paperDao().insert(localPaper);
-                                });
+                        LabVerseDatabase.databaseWriteExecutor.execute(() -> {
+                            for (DocumentSnapshot document : task.getResult()) {
+                                FirebasePaper firebasePaper = document.toObject(FirebasePaper.class);
+                                if (firebasePaper != null && firebasePaper.getPaperId() != null) {
+                                    // Check if paper already exists before inserting
+                                    PaperEntity existingPaper = database.paperDao().getPaperByIdSync(firebasePaper.getPaperId());
+                                    if (existingPaper == null) {
+                                        PaperEntity localPaper = convertToPaperEntity(firebasePaper, userId);
+                                        database.paperDao().insert(localPaper);
+                                        Log.d(TAG, "New paper from Firebase inserted: " + localPaper.paperId);
+                                    } else {
+                                        Log.d(TAG, "Paper from Firebase already exists, skipping: " + existingPaper.paperId);
+                                    }
+                                }
                             }
-                        }
-                        Log.d(TAG, "Papers synced from Firebase");
+                        });
+                        Log.d(TAG, "Finished syncing papers from Firebase.");
                     }
                 });
     }
+
 
     // ==================== SYNC COLLECTIONS ====================
     public void syncCollectionToFirebase(CollectionEntity collection) {

@@ -10,9 +10,12 @@ import com.example.labverse.database.entities.PaperEntity;
 import com.example.labverse.firebase.FirebaseSyncManager;
 import com.example.labverse.models.Paper;
 import com.example.labverse.models.ReadingStatus;
+import com.example.labverse.models.SearchFilters;
+
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class PaperRepository {
     private PaperDao paperDao;
@@ -34,6 +37,11 @@ public class PaperRepository {
     public interface UpdateCallback {
         void onUpdateComplete();
         void onUpdateError(String error);
+    }
+
+    public interface SearchCallback {
+        void onSearchComplete(List<PaperEntity> results);
+        void onSearchError(String error);
     }
 
     public void syncWithServer(String userId, SyncCallback callback) {
@@ -87,6 +95,43 @@ public class PaperRepository {
                 }
             } catch (Exception e) {
                 new Handler(Looper.getMainLooper()).post(() -> callback.onUpdateError(e.getMessage()));
+            }
+        });
+    }
+
+    public void advancedSearch(String query, SearchFilters filters, SearchCallback callback) {
+        executorService.execute(() -> {
+            try {
+                // For now, we only search the local database.
+                // The server-side search logic can be added later.
+
+                String authorFilter = filters.getAuthors().isEmpty() ? null :
+                        String.join(",", filters.getAuthors());
+
+                List<String> journalFilter = filters.getJournals().isEmpty() ? null :
+                        new java.util.ArrayList<>(filters.getJournals());
+
+                Integer yearFrom = filters.getYearFrom();
+                Integer yearTo = filters.getYearTo();
+
+                List<String> readingStatus = filters.getReadingStatus().isEmpty() ? null :
+                        filters.getReadingStatus().stream()
+                                .map(Enum::name)
+                                .collect(Collectors.toList());
+
+                List<PaperEntity> localResults = paperDao.advancedSearch(
+                        query.isEmpty() ? null : query,
+                        authorFilter,
+                        journalFilter,
+                        yearFrom,
+                        yearTo,
+                        readingStatus
+                );
+
+                new Handler(Looper.getMainLooper()).post(() -> callback.onSearchComplete(localResults));
+
+            } catch (Exception e) {
+                new Handler(Looper.getMainLooper()).post(() -> callback.onSearchError(e.getMessage()));
             }
         });
     }

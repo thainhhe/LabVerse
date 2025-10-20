@@ -79,6 +79,33 @@ public interface PaperDao {
     @Query("SELECT COUNT(*) FROM papers WHERE user_id = :userId")
     LiveData<Integer> getPaperCount(String userId);
 
+    @Query("SELECT COUNT(*) FROM papers WHERE user_id = :userId")
+    int getPaperCountSync(String userId);
+
     @Query("DELETE FROM papers WHERE user_id = :userId")
     void deleteAllByUser(String userId);
+
+    @Query("DELETE FROM papers WHERE paper_id IN (:paperIds)")
+    void deletePapersByIds(List<String> paperIds);
+
+    @Query("SELECT paper_id FROM papers")
+    List<String> getAllPaperIds();
+
+    @Query("UPDATE papers SET status = :status WHERE paper_id IN (:paperIds)")
+    void updateStatusForPapers(List<String> paperIds, String status);
+
+    @Query("SELECT * FROM papers WHERE " +
+       "(:query IS NULL OR title LIKE '%' || :query || '%' OR authors LIKE '%' || :query || '%' OR journal LIKE '%' || :query || '%') " +
+       "AND (:authorFilter IS NULL OR authors LIKE '%' || :authorFilter || '%') " +
+       "AND (:journalFilter IS NULL OR journal IN (:journalFilter)) " +
+       "AND (:yearFrom IS NULL OR year >= :yearFrom) " +
+       "AND (:yearTo IS NULL OR year <= :yearTo) " +
+       "AND (:readingStatus IS NULL OR status IN (:readingStatus)) " +
+       "ORDER BY " +
+       "CASE WHEN :query IS NOT NULL AND title LIKE '%' || :query || '%' THEN 1 " +
+       "     WHEN :query IS NOT NULL AND authors LIKE '%' || :query || '%' THEN 2 " +
+       "     ELSE 3 END, " +
+       "date_added DESC")
+    List<PaperEntity> advancedSearch(String query, String authorFilter, List<String> journalFilter, 
+                          Integer yearFrom, Integer yearTo, List<String> readingStatus);
 }

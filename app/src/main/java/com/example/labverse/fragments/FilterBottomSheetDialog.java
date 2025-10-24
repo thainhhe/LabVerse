@@ -4,7 +4,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,7 +20,6 @@ import com.example.labverse.viewmodels.SearchViewModel;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +28,8 @@ public class FilterBottomSheetDialog extends BottomSheetDialogFragment {
 
     private SearchViewModel searchViewModel;
 
-    private TextInputEditText etAuthor, etJournal, etYearFrom, etYearTo;
+    private AutoCompleteTextView etAuthor, etJournal;
+    private EditText etYear;
     private ChipGroup chipGroupStatus;
     private Chip chipUnread, chipReading, chipFinished;
     private Button btnApplyFilters, btnClearFilters;
@@ -46,8 +49,7 @@ public class FilterBottomSheetDialog extends BottomSheetDialogFragment {
         // Find views
         etAuthor = view.findViewById(R.id.et_author);
         etJournal = view.findViewById(R.id.et_journal);
-        etYearFrom = view.findViewById(R.id.et_year_from);
-        etYearTo = view.findViewById(R.id.et_year_to);
+        etYear = view.findViewById(R.id.et_year);
         chipGroupStatus = view.findViewById(R.id.chip_group_status);
         chipUnread = view.findViewById(R.id.chip_unread);
         chipReading = view.findViewById(R.id.chip_reading);
@@ -58,9 +60,26 @@ public class FilterBottomSheetDialog extends BottomSheetDialogFragment {
         // Load current filters into the UI
         loadCurrentFilters();
 
+        // Setup autocomplete adapters
+        setupAutocomplete();
+
         // Set click listeners
         btnApplyFilters.setOnClickListener(v -> applyFilters());
         btnClearFilters.setOnClickListener(v -> clearFilters());
+    }
+
+    private void setupAutocomplete() {
+        searchViewModel.getAllAuthors().observe(getViewLifecycleOwner(), authors -> {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_dropdown_item_1line, authors);
+            etAuthor.setAdapter(adapter);
+        });
+
+        searchViewModel.getAllJournals().observe(getViewLifecycleOwner(), journals -> {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_dropdown_item_1line, journals);
+            etJournal.setAdapter(adapter);
+        });
     }
 
     private void loadCurrentFilters() {
@@ -73,11 +92,8 @@ public class FilterBottomSheetDialog extends BottomSheetDialogFragment {
         if (!currentFilters.getJournals().isEmpty()) {
             etJournal.setText(String.join(", ", currentFilters.getJournals()));
         }
-        if (currentFilters.getYearFrom() != null) {
-            etYearFrom.setText(String.valueOf(currentFilters.getYearFrom()));
-        }
-        if (currentFilters.getYearTo() != null) {
-            etYearTo.setText(String.valueOf(currentFilters.getYearTo()));
+        if (currentFilters.getYear() != null) {
+            etYear.setText(String.valueOf(currentFilters.getYear()));
         }
 
         for (ReadingStatus status : currentFilters.getReadingStatus()) {
@@ -98,8 +114,7 @@ public class FilterBottomSheetDialog extends BottomSheetDialogFragment {
             journals.add(etJournal.getText().toString().trim());
         }
 
-        Integer yearFrom = (etYearFrom.getText() == null || etYearFrom.getText().toString().isEmpty()) ? null : Integer.parseInt(etYearFrom.getText().toString());
-        Integer yearTo = (etYearTo.getText() == null || etYearTo.getText().toString().isEmpty()) ? null : Integer.parseInt(etYearTo.getText().toString());
+        Integer year = (etYear.getText() == null || etYear.getText().toString().isEmpty()) ? null : Integer.parseInt(etYear.getText().toString());
 
         Set<ReadingStatus> statuses = new HashSet<>();
         for (int id : chipGroupStatus.getCheckedChipIds()) {
@@ -108,7 +123,7 @@ public class FilterBottomSheetDialog extends BottomSheetDialogFragment {
             if (id == R.id.chip_finished) statuses.add(ReadingStatus.FINISHED);
         }
 
-        SearchFilters newFilters = new SearchFilters(authors, journals, new HashSet<>(), yearFrom, yearTo, statuses);
+        SearchFilters newFilters = new SearchFilters(authors, journals, new HashSet<>(), year, statuses);
         searchViewModel.updateFilters(newFilters);
 
         dismiss();

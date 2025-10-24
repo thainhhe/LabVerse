@@ -30,6 +30,12 @@ public interface PaperDao {
     @Query("UPDATE papers SET is_favorite = NOT is_favorite WHERE paper_id = :paperId")
     void toggleFavorite(String paperId);
 
+    @Query("SELECT DISTINCT authors FROM papers WHERE authors IS NOT NULL AND authors != ''")
+    LiveData<List<String>> getAllAuthors();
+
+    @Query("SELECT DISTINCT journal FROM papers WHERE journal IS NOT NULL AND journal != ''")
+    LiveData<List<String>> getAllJournals();
+
     // Keeping existing methods
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(PaperEntity paper);
@@ -98,8 +104,7 @@ public interface PaperDao {
        "(:query IS NULL OR title LIKE '%' || :query || '%' OR authors LIKE '%' || :query || '%' OR journal LIKE '%' || :query || '%') " +
        "AND (:authorFilter IS NULL OR authors LIKE '%' || :authorFilter || '%') " +
        "AND (:journalFilter IS NULL OR journal IN (:journalFilter)) " +
-       "AND (:yearFrom IS NULL OR year >= :yearFrom) " +
-       "AND (:yearTo IS NULL OR year <= :yearTo) " +
+       "AND (:year IS NULL OR year = :year) " +
        "AND (:readingStatus IS NULL OR status IN (:readingStatus)) " +
        "ORDER BY " +
        "CASE WHEN :query IS NOT NULL AND title LIKE '%' || :query || '%' THEN 1 " +
@@ -107,5 +112,5 @@ public interface PaperDao {
        "     ELSE 3 END, " +
        "date_added DESC")
     List<PaperEntity> advancedSearch(String query, String authorFilter, List<String> journalFilter, 
-                          Integer yearFrom, Integer yearTo, List<String> readingStatus);
+                          Integer year, List<String> readingStatus);
 }

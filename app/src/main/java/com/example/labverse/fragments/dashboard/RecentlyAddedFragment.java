@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.labverse.MainActivity;
 import com.example.labverse.R;
 import com.example.labverse.adapters.PaperAdapter;
 import com.example.labverse.models.Paper;
@@ -19,12 +20,13 @@ import com.example.labverse.models.Paper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecentlyAddedFragment extends Fragment {
+public class RecentlyAddedFragment extends Fragment implements MainActivity.SearchListener {
 
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private PaperAdapter paperAdapter;
     private List<Paper> paperList;
+    private List<Paper> filteredPaperList;
 
     @Nullable
     @Override
@@ -44,7 +46,8 @@ public class RecentlyAddedFragment extends Fragment {
 
     private void setupRecyclerView() {
         paperList = new ArrayList<>();
-        paperAdapter = new PaperAdapter(paperList, getContext());
+        filteredPaperList = new ArrayList<>();
+        paperAdapter = new PaperAdapter(filteredPaperList, getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(paperAdapter);
     }
@@ -54,9 +57,26 @@ public class RecentlyAddedFragment extends Fragment {
         swipeRefreshLayout.setRefreshing(true);
         paperList.clear();
         // Mock data for now
-        paperList.add(new Paper("1", "Paper Added Yesterday", "Author A", "Journal X", "2024", "unread"));
-        paperList.add(new Paper("2", "Paper Added Today", "Author B", "Journal Y", "2024", "reading"));
-        paperAdapter.notifyDataSetChanged();
+        paperList.add(new Paper("1", "Awesome Paper 1", "Author A", "Journal X", "2023", "favorite"));
+        paperList.add(new Paper("2", "Another Great Paper", "Author B", "Journal Y", "2023", "reading"));
+        performSearch("");
         swipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void performSearch(String query) {
+        filteredPaperList.clear();
+        if (query.isEmpty()) {
+            filteredPaperList.addAll(paperList);
+        } else {
+            for (Paper paper : paperList) {
+                if (paper.getTitle().toLowerCase().contains(query.toLowerCase()) ||
+                        paper.getAuthors().toLowerCase().contains(query.toLowerCase()) ||
+                        paper.getJournal().toLowerCase().contains(query.toLowerCase())) {
+                    filteredPaperList.add(paper);
+                }
+            }
+        }
+        paperAdapter.notifyDataSetChanged();
     }
 }

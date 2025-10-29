@@ -2,37 +2,28 @@ package com.example.labverse.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.labverse.MainActivity;
 import com.example.labverse.R;
 import com.example.labverse.adapters.DashboardPagerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-public class DashboardFragment extends Fragment {
+public class DashboardFragment extends Fragment implements MainActivity.SearchListener {
 
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private DashboardPagerAdapter pagerAdapter;
     private FloatingActionButton fabImportPaper;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
 
     @Nullable
     @Override
@@ -72,32 +63,10 @@ public class DashboardFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.dashboard_menu, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) searchItem.getActionView();
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                Toast.makeText(getContext(), "Searching for: " + query, Toast.LENGTH_SHORT).show();
-                // TODO: Implement search logic across all tabs or the current tab
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                // Optional: Implement live search
-                return true;
-            }
-        });
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        // Handle other menu item clicks if any
-        return super.onOptionsItemSelected(item);
+    public void performSearch(String query) {
+        Fragment fragment = getChildFragmentManager().findFragmentByTag("f" + viewPager.getCurrentItem());
+        if (fragment instanceof MainActivity.SearchListener) {
+            ((MainActivity.SearchListener) fragment).performSearch(query);
+        }
     }
 }

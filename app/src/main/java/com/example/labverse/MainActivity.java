@@ -2,12 +2,16 @@ package com.example.labverse;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
@@ -23,36 +27,33 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     private BottomNavigationView bottomNavigationView;
     private FloatingActionButton fabAddPaper;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
+
+    public interface SearchListener {
+        void performSearch(String query);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // --- PHẦN THÊM MỚI ---
-        // Thiết lập Toolbar làm Action Bar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Xử lý sự kiện click vào Toolbar (bao gồm cả logo/tiêu đề)
-        toolbar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Chỉ thực hiện khi fragment hiện tại không phải là Dashboard
-                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-                if (!(currentFragment instanceof DashboardFragment)) {
-                    loadFragment(new DashboardFragment());
-                    bottomNavigationView.setSelectedItemId(R.id.nav_dashboard); // Cập nhật mục được chọn
-                    Toast.makeText(MainActivity.this, "Returning to Home", Toast.LENGTH_SHORT).show();
-                }
+        toolbar.setOnClickListener(v -> {
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (!(currentFragment instanceof DashboardFragment)) {
+                loadFragment(new DashboardFragment());
+                bottomNavigationView.setSelectedItemId(R.id.nav_dashboard); // Cập nhật mục được chọn
+                Toast.makeText(MainActivity.this, "Returning to Home", Toast.LENGTH_SHORT).show();
             }
         });
-        // --- KẾT THÚC PHẦN THÊM MỚI ---
 
         initViews();
         setupBottomNavigation();
 
-        // Load default fragment
         if (savedInstanceState == null) {
             loadFragment(new DashboardFragment());
         }
@@ -62,17 +63,49 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         fabAddPaper = findViewById(R.id.fab_add_paper);
 
-        fabAddPaper.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ImportPaperActivity.class);
-                startActivity(intent);
-            }
+        fabAddPaper.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ImportPaperActivity.class);
+            startActivity(intent);
         });
     }
 
     private void setupBottomNavigation() {
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.dashboard_search_menu, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setQueryHint("Search papers, authors, or journals...");
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                performSearch(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
+                }
+                searchRunnable = () -> performSearch(newText);
+                searchHandler.postDelayed(searchRunnable, 300);
+                return true;
+            }
+        });
+
+        return true;
+    }
+
+    private void performSearch(String query) {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        if (fragment instanceof SearchListener) {
+            ((SearchListener) fragment).performSearch(query);
+        }
     }
 
     @Override

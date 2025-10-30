@@ -58,7 +58,6 @@ public abstract class LabVerseDatabase extends RoomDatabase {
                                     LabVerseDatabase.class,
                                     "labverse_database"
                             )
-                            // The callback that might add sample data has been removed.
                             .fallbackToDestructiveMigration() // For development only
                             .build();
                 }

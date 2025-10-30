@@ -18,13 +18,13 @@ public interface PaperDao {
     @Query("SELECT * FROM papers ORDER BY date_added DESC LIMIT 50")
     LiveData<List<PaperEntity>> getRecentlyAdded();
 
-    @Query("SELECT * FROM papers WHERE last_read IS NOT NULL ORDER BY last_read DESC LIMIT 50")
+    @Query("SELECT * FROM papers WHERE status IN ('reading', 'finished') ORDER BY last_read DESC LIMIT 50")
     LiveData<List<PaperEntity>> getRecentlyRead();
 
     @Query("SELECT * FROM papers WHERE is_favorite = 1 ORDER BY date_added DESC")
     LiveData<List<PaperEntity>> getFavorites();
 
-    @Query("UPDATE papers SET status = :status, last_read = CASE WHEN :status = 'reading' THEN :timestamp ELSE last_read END WHERE paper_id = :paperId")
+    @Query("UPDATE papers SET status = :status, last_read = CASE WHEN :status = 'reading' OR :status = 'finished' THEN :timestamp ELSE last_read END WHERE paper_id = :paperId")
     void updateReadingStatus(String paperId, String status, long timestamp);
 
     @Query("UPDATE papers SET is_favorite = NOT is_favorite WHERE paper_id = :paperId")

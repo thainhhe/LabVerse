@@ -2,6 +2,7 @@ package com.example.labverse;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -25,9 +26,11 @@ import com.example.labverse.fragments.SearchFragment;
 import com.example.labverse.viewmodels.SearchViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
+    private static final String TAG = "MainActivity"; // For logging
     private BottomNavigationView bottomNavigationView;
     private FloatingActionButton fabAddPaper;
     private FirebaseAuthManager authManager;
@@ -43,6 +46,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         authManager = new FirebaseAuthManager(this);
         searchViewModel = new ViewModelProvider(this).get(SearchViewModel.class);
+
+        // --- DEBUG: Print User ID to Logcat ---
+        FirebaseUser currentUser = authManager.getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+            Log.d(TAG, "Current User ID: " + userId);
+        }
+        // --- END DEBUG ---
 
         initViews();
         setupBottomNavigation();

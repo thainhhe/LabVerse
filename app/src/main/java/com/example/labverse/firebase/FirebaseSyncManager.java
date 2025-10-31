@@ -38,7 +38,9 @@ public class FirebaseSyncManager {
     public void syncPaperToFirebase(PaperEntity paper) {
         FirebasePaper firebasePaper = convertToFirebasePaper(paper);
 
-        firestore.collection(PAPERS_COLLECTION)
+        // Corrected path: users/{userId}/papers/{paperId}
+        firestore.collection(USERS_COLLECTION).document(paper.userId)
+                .collection(PAPERS_COLLECTION)
                 .document(paper.paperId)
                 .set(firebasePaper.toMap())
                 .addOnSuccessListener(aVoid -> {
@@ -52,15 +54,16 @@ public class FirebaseSyncManager {
     }
 
     public void syncPapersFromFirebase(String userId) {
-        firestore.collection(PAPERS_COLLECTION)
-                .whereEqualTo("userId", userId)
+        // Corrected path: users/{userId}/papers
+        firestore.collection(USERS_COLLECTION).document(userId)
+                .collection(PAPERS_COLLECTION)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
                         for (DocumentSnapshot document : task.getResult()) {
                             FirebasePaper firebasePaper = document.toObject(FirebasePaper.class);
                             if (firebasePaper != null) {
-                                PaperEntity localPaper = convertToPaperEntity(firebasePaper);
+                                PaperEntity localPaper = convertToPaperEntity(firebasePaper, userId);
                                 LabVerseDatabase.databaseWriteExecutor.execute(() -> {
                                     database.paperDao().insert(localPaper);
                                 });
@@ -183,10 +186,10 @@ public class FirebaseSyncManager {
         return paper;
     }
 
-    private PaperEntity convertToPaperEntity(FirebasePaper firebasePaper) {
+    private PaperEntity convertToPaperEntity(FirebasePaper firebasePaper, String userId) {
         PaperEntity entity = new PaperEntity();
         entity.paperId = firebasePaper.getPaperId();
-        entity.userId = firebasePaper.getUserId();
+        entity.userId = userId; // Use the provided userId
         entity.title = firebasePaper.getTitle();
         entity.authors = firebasePaper.getAuthors();
         entity.journal = firebasePaper.getJournal();

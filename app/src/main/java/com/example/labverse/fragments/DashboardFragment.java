@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,7 +13,6 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.labverse.MainActivity;
 import com.example.labverse.R;
 import com.example.labverse.adapters.DashboardPagerAdapter;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -23,7 +21,6 @@ public class DashboardFragment extends Fragment implements MainActivity.SearchLi
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private DashboardPagerAdapter pagerAdapter;
-    private FloatingActionButton fabImportPaper;
 
     @Nullable
     @Override
@@ -37,7 +34,6 @@ public class DashboardFragment extends Fragment implements MainActivity.SearchLi
 
         tabLayout = view.findViewById(R.id.tab_layout);
         viewPager = view.findViewById(R.id.view_pager);
-        fabImportPaper = view.findViewById(R.id.fab_import_paper);
 
         pagerAdapter = new DashboardPagerAdapter(getChildFragmentManager(), getLifecycle());
         viewPager.setAdapter(pagerAdapter);
@@ -55,11 +51,6 @@ public class DashboardFragment extends Fragment implements MainActivity.SearchLi
                     break;
             }
         }).attach();
-
-        fabImportPaper.setOnClickListener(v -> {
-            // TODO: Implement the logic to import a new paper
-            Toast.makeText(getContext(), "Import New Paper clicked!", Toast.LENGTH_SHORT).show();
-        });
     }
 
     @Override

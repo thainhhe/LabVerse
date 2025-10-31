@@ -11,7 +11,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_papers"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="88dp" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

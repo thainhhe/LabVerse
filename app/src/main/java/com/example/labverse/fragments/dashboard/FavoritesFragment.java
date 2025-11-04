@@ -19,6 +19,7 @@ import com.example.labverse.models.Paper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class FavoritesFragment extends Fragment implements MainActivity.SearchListener {
 
@@ -56,8 +57,46 @@ public class FavoritesFragment extends Fragment implements MainActivity.SearchLi
         // TODO: Implement logic to load favorite papers from the database
         swipeRefreshLayout.setRefreshing(true);
         paperList.clear();
-        // Mock data for now
-        paperList.add(new Paper("4", "My Favorite Paper", "Author D", "Journal W", "2022", "finished"));
+
+        // Mock data for testing
+        long currentTime = System.currentTimeMillis();
+        List<Paper> allPapers = new ArrayList<>();
+        allPapers.add(new Paper("1", "The impact of AI on software development", "John Doe", "IEEE Software", "2023", "reading"));
+        allPapers.get(0).setLastRead(currentTime - TimeUnit.HOURS.toMillis(2));
+        allPapers.get(0).setFavorite(true);
+
+        allPapers.add(new Paper("2", "A new approach to quantum computing", "Jane Smith", "Nature Physics", "2022", "unread"));
+
+        allPapers.add(new Paper("3", "Machine Learning in Healthcare", "Emily White", "The Lancet", "2023", "finished"));
+        allPapers.get(2).setLastRead(currentTime - TimeUnit.DAYS.toMillis(5));
+
+        allPapers.add(new Paper("4", "The future of mobile applications", "Michael Brown", "ACM", "2021", "reading"));
+        allPapers.get(3).setLastRead(currentTime - TimeUnit.MINUTES.toMillis(30));
+
+        allPapers.add(new Paper("5", "Cybersecurity in the IoT era", "Chris Green", "WIRED", "2023", "unread"));
+        allPapers.get(4).setFavorite(true);
+
+        allPapers.add(new Paper("6", "A study on renewable energy sources", "Jessica Blue", "Energy Journal", "2020", "finished"));
+        allPapers.get(5).setLastRead(currentTime - TimeUnit.DAYS.toMillis(10));
+
+        allPapers.add(new Paper("7", "The role of blockchain in finance", "David Black", "Journal of Finance", "2023", "reading"));
+        allPapers.get(6).setLastRead(currentTime - TimeUnit.DAYS.toMillis(1));
+
+        allPapers.add(new Paper("8", "Exploring the depths of the ocean", "Olivia Purple", "National Geographic", "2019", "unread"));
+
+        allPapers.add(new Paper("9", "The psychology of user experience", "William Yellow", "UX Magazine", "2023", "finished"));
+        allPapers.get(8).setLastRead(currentTime - TimeUnit.DAYS.toMillis(14));
+        allPapers.get(8).setFavorite(true);
+
+        allPapers.add(new Paper("10", "Advancements in gene editing", "Sophia Orange", "Science", "2023", "reading"));
+        allPapers.get(9).setLastRead(currentTime - TimeUnit.HOURS.toMillis(5));
+
+        for (Paper paper : allPapers) {
+            if (paper.isFavorite()) {
+                paperList.add(paper);
+            }
+        }
+
         performSearch("");
         swipeRefreshLayout.setRefreshing(false);
     }

@@ -22,7 +22,6 @@ import com.example.labverse.fragments.DashboardFragment;
 import com.example.labverse.fragments.DiscoverFragment;
 import com.example.labverse.fragments.FilterBottomSheetDialog;
 import com.example.labverse.fragments.ProfileFragment;
-import com.example.labverse.fragments.SearchFragment;
 import com.example.labverse.viewmodels.SearchViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -36,9 +35,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private FirebaseAuthManager authManager;
     private SearchViewModel searchViewModel;
 
-    // To keep track of the current visible fragment
-    private Fragment currentFragment;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,13 +43,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         authManager = new FirebaseAuthManager(this);
         searchViewModel = new ViewModelProvider(this).get(SearchViewModel.class);
 
-        // --- DEBUG: Print User ID to Logcat ---
         FirebaseUser currentUser = authManager.getCurrentUser();
         if (currentUser != null) {
-            String userId = currentUser.getUid();
-            Log.d(TAG, "Current User ID: " + userId);
+            Log.d(TAG, "Current User ID: " + currentUser.getUid());
         }
-        // --- END DEBUG ---
 
         initViews();
         setupBottomNavigation();
@@ -90,40 +83,30 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                searchViewModel.updateSearchQuery(query);
+                // The query is already being handled by onQueryTextChange
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // Navigate to SearchFragment if there is text
-                if (!newText.isEmpty() && !(currentFragment instanceof SearchFragment)) {
-                    loadFragment(new SearchFragment());
-                }
-                // Navigate back to DashboardFragment if text is empty
-                else if (newText.isEmpty() && (currentFragment instanceof SearchFragment)) {
-                    loadFragment(new DashboardFragment());
-                }
-
+                // Live update the search query
                 searchViewModel.updateSearchQuery(newText);
                 return true;
             }
         });
 
-        // Handle closing the search view
+        // Handle closing the search view to clear the query
         searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                return true; // Allow the search view to expand
+                return true; // Allow expand
             }
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                // When search is closed, go back to the DashboardFragment
-                if (currentFragment instanceof SearchFragment) {
-                    loadFragment(new DashboardFragment());
-                }
-                return true; // Allow the search view to collapse
+                // When search is closed, clear the search query
+                searchViewModel.updateSearchQuery("");
+                return true; // Allow collapse
             }
         });
 
@@ -162,7 +145,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     .beginTransaction()
                     .replace(R.id.fragment_container, fragment)
                     .commit();
-            currentFragment = fragment; // Keep track of the current fragment
             return true;
         }
         return false;

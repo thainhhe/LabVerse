@@ -15,10 +15,9 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.labverse.R;
 import com.example.labverse.adapters.PaperAdapter;
-import com.example.labverse.database.entities.PaperEntity;
 import com.example.labverse.models.Paper;
-import com.example.labverse.utils.PaperMapper;
-import com.example.labverse.viewmodels.LibraryViewModel;
+import com.example.labverse.models.SearchState;
+import com.example.labverse.viewmodels.SearchViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,7 @@ public class RecentlyAddedFragment extends Fragment {
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private PaperAdapter paperAdapter;
-    private LibraryViewModel viewModel;
+    private SearchViewModel searchViewModel;
     private List<Paper> paperList = new ArrayList<>();
 
     @Nullable
@@ -41,7 +40,10 @@ public class RecentlyAddedFragment extends Fragment {
 
         setupRecyclerView();
 
-        swipeRefreshLayout.setOnRefreshListener(() -> viewModel.refreshData());
+        // When user swipes to refresh, re-run the current search/filter query
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            searchViewModel.updateSearchQuery(searchViewModel.getActiveFilters().getValue() != null ? "" : "");
+        });
 
         return view;
     }
@@ -49,9 +51,14 @@ public class RecentlyAddedFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // Scoping the ViewModel to the parent fragment (DashboardFragment) or Activity
-        viewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
-        observeViewModel();
+
+        // Use the shared SearchViewModel from the Activity
+        searchViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
+
+        observeSearchState();
+
+        // Perform an initial search to load all papers when the fragment is first created
+        searchViewModel.performInitialSearch();
     }
 
     private void setupRecyclerView() {
@@ -60,25 +67,23 @@ public class RecentlyAddedFragment extends Fragment {
         recyclerView.setAdapter(paperAdapter);
     }
 
-    private void observeViewModel() {
-        viewModel.getRecentlyAdded().observe(getViewLifecycleOwner(), paperEntities -> {
-            if (paperEntities != null) {
-                updatePaperList(paperEntities);
-            }
-        });
-
-        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (isLoading != null) {
-                swipeRefreshLayout.setRefreshing(isLoading);
+    private void observeSearchState() {
+        searchViewModel.getSearchState().observe(getViewLifecycleOwner(), state -> {
+            if (state instanceof SearchState.Loading) {
+                swipeRefreshLayout.setRefreshing(true);
+            } else if (state instanceof SearchState.Success) {
+                swipeRefreshLayout.setRefreshing(false);
+                updatePaperList(((SearchState.Success) state).getPapers());
+            } else if (state instanceof SearchState.Error || state instanceof SearchState.Empty || state instanceof SearchState.Idle) {
+                swipeRefreshLayout.setRefreshing(false);
+                updatePaperList(new ArrayList<>()); // Clear the list on error or empty result
             }
         });
     }
 
-    private void updatePaperList(List<PaperEntity> paperEntities) {
+    private void updatePaperList(List<Paper> newPapers) {
         paperList.clear();
-        for (PaperEntity entity : paperEntities) {
-            paperList.add(PaperMapper.fromEntity(entity));
-        }
+        paperList.addAll(newPapers);
         paperAdapter.notifyDataSetChanged();
     }
 }

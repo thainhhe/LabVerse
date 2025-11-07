@@ -36,7 +36,19 @@ public interface PaperDao {
     @Query("SELECT DISTINCT journal FROM papers WHERE journal IS NOT NULL AND journal != ''")
     LiveData<List<String>> getAllJournals();
 
-    // Keeping existing methods
+    @Query("SELECT * FROM papers WHERE paper_id = :paperId")
+    PaperEntity getPaperByIdSync(String paperId);
+
+    @Query("SELECT * FROM papers WHERE " +
+           "(:query IS NULL OR title LIKE '%' || :query || '%') " +
+           "AND (:authorFilter IS NULL OR authors LIKE '%' || :authorFilter || '%') " +
+           "AND (:journalFilter IS NULL OR journal IN (:journalFilter)) " +
+           "AND (:year IS NULL OR year = :year) " +
+           "AND (:readingStatus IS NULL OR status IN (:readingStatus)) " +
+           "ORDER BY date_added DESC")
+    List<PaperEntity> advancedSearch(String query, String authorFilter, List<String> journalFilter, Integer year, List<String> readingStatus);
+
+    // Other existing methods...
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(PaperEntity paper);
 
@@ -48,9 +60,6 @@ public interface PaperDao {
 
     @Query("SELECT * FROM papers WHERE paper_id = :paperId")
     LiveData<PaperEntity> getPaperById(String paperId);
-
-    @Query("SELECT * FROM papers WHERE paper_id = :paperId")
-    PaperEntity getPaperByIdSync(String paperId);
 
     @Query("SELECT * FROM papers WHERE user_id = :userId AND status = :status ORDER BY date_added DESC")
     LiveData<List<PaperEntity>> getPapersByStatus(String userId, String status);
@@ -99,18 +108,4 @@ public interface PaperDao {
 
     @Query("UPDATE papers SET status = :status WHERE paper_id IN (:paperIds)")
     void updateStatusForPapers(List<String> paperIds, String status);
-
-    @Query("SELECT * FROM papers WHERE " +
-       "(:query IS NULL OR title LIKE '%' || :query || '%' OR authors LIKE '%' || :query || '%' OR journal LIKE '%' || :query || '%') " +
-       "AND (:authorFilter IS NULL OR authors LIKE '%' || :authorFilter || '%') " +
-       "AND (:journalFilter IS NULL OR journal IN (:journalFilter)) " +
-       "AND (:year IS NULL OR year = :year) " +
-       "AND (:readingStatus IS NULL OR status IN (:readingStatus)) " +
-       "ORDER BY " +
-       "CASE WHEN :query IS NOT NULL AND title LIKE '%' || :query || '%' THEN 1 " +
-       "     WHEN :query IS NOT NULL AND authors LIKE '%' || :query || '%' THEN 2 " +
-       "     ELSE 3 END, " +
-       "date_added DESC")
-    List<PaperEntity> advancedSearch(String query, String authorFilter, List<String> journalFilter, 
-                          Integer year, List<String> readingStatus);
 }

@@ -15,20 +15,22 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.labverse.R;
 import com.example.labverse.adapters.PaperAdapter;
-import com.example.labverse.database.entities.PaperEntity;
 import com.example.labverse.models.Paper;
-import com.example.labverse.utils.PaperMapper;
-import com.example.labverse.viewmodels.LibraryViewModel;
+import com.example.labverse.models.ReadingStatus;
+import com.example.labverse.models.SearchFilters;
+import com.example.labverse.models.SearchState;
+import com.example.labverse.viewmodels.SearchViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RecentlyReadFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private PaperAdapter paperAdapter;
-    private LibraryViewModel viewModel;
+    private SearchViewModel searchViewModel;
     private List<Paper> paperList = new ArrayList<>();
 
     @Nullable
@@ -41,7 +43,9 @@ public class RecentlyReadFragment extends Fragment {
 
         setupRecyclerView();
 
-        swipeRefreshLayout.setOnRefreshListener(() -> viewModel.refreshData());
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            searchViewModel.updateSearchQuery(searchViewModel.getActiveFilters().getValue() != null ? "" : "");
+        });
 
         return view;
     }
@@ -49,8 +53,11 @@ public class RecentlyReadFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
-        observeViewModel();
+        searchViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
+        observeSearchState();
+
+        // The initial search is likely already triggered by RecentlyAddedFragment, so we don't need to call it again.
+        // If this fragment can be displayed first, you might need to add: searchViewModel.performInitialSearch();
     }
 
     private void setupRecyclerView() {
@@ -59,25 +66,45 @@ public class RecentlyReadFragment extends Fragment {
         recyclerView.setAdapter(paperAdapter);
     }
 
-    private void observeViewModel() {
-        viewModel.getRecentlyRead().observe(getViewLifecycleOwner(), paperEntities -> {
-            if (paperEntities != null) {
-                updatePaperList(paperEntities);
-            }
-        });
+    private void observeSearchState() {
+        searchViewModel.getSearchState().observe(getViewLifecycleOwner(), state -> {
+            if (state instanceof SearchState.Loading) {
+                swipeRefreshLayout.setRefreshing(true);
+            } else if (state instanceof SearchState.Success) {
+                swipeRefreshLayout.setRefreshing(false);
 
-        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (isLoading != null) {
-                swipeRefreshLayout.setRefreshing(isLoading);
+                List<Paper> papersFromSearch = ((SearchState.Success) state).getPapers();
+                SearchFilters appliedFilters = searchViewModel.getActiveFilters().getValue();
+
+                List<Paper> papersToDisplay;
+
+                // If the user has NOT applied a status filter from the dialog, then apply this tab's default filter.
+                if (appliedFilters == null || appliedFilters.getReadingStatus().isEmpty()) {
+                    papersToDisplay = filterForRecentlyRead(papersFromSearch);
+                } else {
+                    // If the user DID apply a status filter, we honor it and display the results directly,
+                    // overriding the tab's default 'reading' or 'finished' logic.
+                    papersToDisplay = papersFromSearch;
+                }
+                updatePaperList(papersToDisplay);
+
+            } else {
+                swipeRefreshLayout.setRefreshing(false);
+                updatePaperList(new ArrayList<>()); // Clear list on error or empty state
             }
         });
     }
 
-    private void updatePaperList(List<PaperEntity> paperEntities) {
+    private List<Paper> filterForRecentlyRead(List<Paper> papers) {
+        // Filter to only include papers that are 'reading' or 'finished'
+        return papers.stream()
+                .filter(paper -> "reading".equals(paper.getStatus()) || "finished".equals(paper.getStatus()))
+                .collect(Collectors.toList());
+    }
+
+    private void updatePaperList(List<Paper> newPapers) {
         paperList.clear();
-        for (PaperEntity entity : paperEntities) {
-            paperList.add(PaperMapper.fromEntity(entity));
-        }
+        paperList.addAll(newPapers);
         paperAdapter.notifyDataSetChanged();
     }
 }

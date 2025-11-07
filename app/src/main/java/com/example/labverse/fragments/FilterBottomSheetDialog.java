@@ -57,6 +57,9 @@ public class FilterBottomSheetDialog extends BottomSheetDialogFragment {
         btnApplyFilters = view.findViewById(R.id.btn_apply_filters);
         btnClearFilters = view.findViewById(R.id.btn_clear_filters);
 
+        // Allow multiple chips to be selected
+        chipGroupStatus.setSingleSelection(false);
+
         // Load current filters into the UI
         loadCurrentFilters();
 
@@ -117,11 +120,9 @@ public class FilterBottomSheetDialog extends BottomSheetDialogFragment {
         Integer year = (etYear.getText() == null || etYear.getText().toString().isEmpty()) ? null : Integer.parseInt(etYear.getText().toString());
 
         Set<ReadingStatus> statuses = new HashSet<>();
-        for (int id : chipGroupStatus.getCheckedChipIds()) {
-            if (id == R.id.chip_unread) statuses.add(ReadingStatus.UNREAD);
-            if (id == R.id.chip_reading) statuses.add(ReadingStatus.READING);
-            if (id == R.id.chip_finished) statuses.add(ReadingStatus.FINISHED);
-        }
+        if (chipUnread.isChecked()) statuses.add(ReadingStatus.UNREAD);
+        if (chipReading.isChecked()) statuses.add(ReadingStatus.READING);
+        if (chipFinished.isChecked()) statuses.add(ReadingStatus.FINISHED);
 
         SearchFilters newFilters = new SearchFilters(authors, journals, new HashSet<>(), year, statuses);
         searchViewModel.updateFilters(newFilters);
@@ -130,6 +131,10 @@ public class FilterBottomSheetDialog extends BottomSheetDialogFragment {
     }
 
     private void clearFilters() {
+        etAuthor.setText("");
+        etJournal.setText("");
+        etYear.setText("");
+        chipGroupStatus.clearCheck();
         searchViewModel.clearAllFilters();
         dismiss();
     }

@@ -15,20 +15,20 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.labverse.R;
 import com.example.labverse.adapters.PaperAdapter;
-import com.example.labverse.database.entities.PaperEntity;
 import com.example.labverse.models.Paper;
-import com.example.labverse.utils.PaperMapper;
-import com.example.labverse.viewmodels.LibraryViewModel;
+import com.example.labverse.models.SearchState;
+import com.example.labverse.viewmodels.SearchViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FavoritesFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private PaperAdapter paperAdapter;
-    private LibraryViewModel viewModel;
+    private SearchViewModel searchViewModel;
     private List<Paper> paperList = new ArrayList<>();
 
     @Nullable
@@ -41,7 +41,9 @@ public class FavoritesFragment extends Fragment {
 
         setupRecyclerView();
 
-        swipeRefreshLayout.setOnRefreshListener(() -> viewModel.refreshData());
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            searchViewModel.updateSearchQuery(searchViewModel.getActiveFilters().getValue() != null ? "" : "");
+        });
 
         return view;
     }
@@ -49,8 +51,8 @@ public class FavoritesFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
-        observeViewModel();
+        searchViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
+        observeSearchState();
     }
 
     private void setupRecyclerView() {
@@ -59,25 +61,32 @@ public class FavoritesFragment extends Fragment {
         recyclerView.setAdapter(paperAdapter);
     }
 
-    private void observeViewModel() {
-        viewModel.getFavorites().observe(getViewLifecycleOwner(), paperEntities -> {
-            if (paperEntities != null) {
-                updatePaperList(paperEntities);
-            }
-        });
-
-        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (isLoading != null) {
-                swipeRefreshLayout.setRefreshing(isLoading);
+    private void observeSearchState() {
+        searchViewModel.getSearchState().observe(getViewLifecycleOwner(), state -> {
+            if (state instanceof SearchState.Loading) {
+                swipeRefreshLayout.setRefreshing(true);
+            } else if (state instanceof SearchState.Success) {
+                swipeRefreshLayout.setRefreshing(false);
+                // Apply the specific filter for this fragment
+                List<Paper> filteredPapers = filterForFavorites(((SearchState.Success) state).getPapers());
+                updatePaperList(filteredPapers);
+            } else {
+                swipeRefreshLayout.setRefreshing(false);
+                updatePaperList(new ArrayList<>()); // Clear list on error or empty state
             }
         });
     }
 
-    private void updatePaperList(List<PaperEntity> paperEntities) {
+    private List<Paper> filterForFavorites(List<Paper> papers) {
+        // Filter to only include papers that are favorites, regardless of their reading status
+        return papers.stream()
+                .filter(Paper::isFavorite)
+                .collect(Collectors.toList());
+    }
+
+    private void updatePaperList(List<Paper> newPapers) {
         paperList.clear();
-        for (PaperEntity entity : paperEntities) {
-            paperList.add(PaperMapper.fromEntity(entity));
-        }
+        paperList.addAll(newPapers);
         paperAdapter.notifyDataSetChanged();
     }
 }

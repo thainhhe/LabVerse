@@ -25,15 +25,12 @@ public class PaperRepository {
     private PaperDao paperDao;
     private FirebaseSyncManager firebaseSyncManager;
     private ExecutorService executorService;
-    // Assume you have a remote data source for server searches
-    // private PaperRemoteDataSource remoteDataSource; 
 
     public PaperRepository(Application application) {
         LabVerseDatabase database = LabVerseDatabase.getDatabase(application);
         paperDao = database.paperDao();
         firebaseSyncManager = new FirebaseSyncManager(application);
         executorService = Executors.newFixedThreadPool(4);
-        // remoteDataSource = new PaperRemoteDataSource();
     }
 
     public interface SyncCallback {
@@ -117,26 +114,8 @@ public class PaperRepository {
     public void advancedSearch(String query, SearchFilters filters, SearchCallback callback) {
         executorService.execute(() -> {
             try {
-                // Step 1: Search local database first
                 List<PaperEntity> localResultEntities = searchLocalDatabase(query, filters);
                 List<Paper> localResults = PaperMapper.fromEntities(localResultEntities);
-
-                // Step 2: If online, search server for more comprehensive results
-                if (isOnline()) {
-                    try {
-                        // This is a placeholder for your actual remote search call
-                        // List<Paper> serverResults = remoteDataSource.advancedSearch(query, filters);
-                        // List<Paper> mergedResults = mergeSearchResults(localResults, serverResults);
-                        // notifySearchSuccess(mergedResults, callback);
-                        // For now, we'll just return local results.
-                        notifySearchSuccess(localResults, callback);
-                        return;
-                    } catch (Exception e) {
-                        // Fallback to local results if server fails
-                    }
-                }
-                
-                // Return local results (offline mode or server failure)
                 notifySearchSuccess(localResults, callback);
 
             } catch (Exception e) {
@@ -147,16 +126,16 @@ public class PaperRepository {
 
     private List<PaperEntity> searchLocalDatabase(String query, SearchFilters filters) {
         String authorFilter = filters.getAuthors().isEmpty() ? null :
-                String.join(",", filters.getAuthors());
+                filters.getAuthors().iterator().next();
 
         List<String> journalFilter = filters.getJournals().isEmpty() ? null :
-                new java.util.ArrayList<>(filters.getJournals());
+                new ArrayList<>(filters.getJournals());
 
         Integer year = filters.getYear();
 
         List<String> readingStatus = filters.getReadingStatus().isEmpty() ? null :
                 filters.getReadingStatus().stream()
-                        .map(Enum::name)
+                        .map(status -> status.name().toLowerCase())
                         .collect(Collectors.toList());
 
         return paperDao.advancedSearch(
@@ -166,22 +145,6 @@ public class PaperRepository {
                 year,
                 readingStatus
         );
-    }
-
-    private List<Paper> mergeSearchResults(List<Paper> local, List<Paper> remote) {
-        Map<String, Paper> mergedMap = new LinkedHashMap<>();
-        
-        // Add all local papers
-        for (Paper paper : local) {
-            mergedMap.put(paper.getId(), paper);
-        }
-        
-        // Add remote papers (will override local if same ID)
-        for (Paper paper : remote) {
-            mergedMap.put(paper.getId(), paper);
-        }
-        
-        return new ArrayList<>(mergedMap.values());
     }
 
     private void notifySearchSuccess(List<Paper> results, SearchCallback callback) {
@@ -195,7 +158,6 @@ public class PaperRepository {
     }
 
     private boolean isOnline() {
-        // Implement network connectivity check
         return true; // Placeholder
     }
 }

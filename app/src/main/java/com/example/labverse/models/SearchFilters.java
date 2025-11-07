@@ -6,31 +6,30 @@ import java.util.Set;
 public class SearchFilters {
     private Set<String> authors = new HashSet<>();
     private Set<String> journals = new HashSet<>();
-    private Set<String> keywords = new HashSet<>();
+    // keywords field removed
     private Integer year;
     private Set<ReadingStatus> readingStatus = new HashSet<>();
 
-    // Constructors
+    // Default constructor
     public SearchFilters() {}
 
-    public SearchFilters(Set<String> authors, Set<String> journals, Set<String> keywords,
+    // Full constructor - keywords removed
+    public SearchFilters(Set<String> authors, Set<String> journals, Set<String> keywords, 
                         Integer year, Set<ReadingStatus> readingStatus) {
-        this.authors = authors;
-        this.journals = journals;
-        this.keywords = keywords;
+        this.authors = authors != null ? authors : new HashSet<>();
+        this.journals = journals != null ? journals : new HashSet<>();
         this.year = year;
-        this.readingStatus = readingStatus;
+        this.readingStatus = readingStatus != null ? readingStatus : new HashSet<>();
     }
 
-    // Getters and setters
+    // Getters and Setters
     public Set<String> getAuthors() { return authors; }
     public void setAuthors(Set<String> authors) { this.authors = authors; }
 
     public Set<String> getJournals() { return journals; }
     public void setJournals(Set<String> journals) { this.journals = journals; }
 
-    public Set<String> getKeywords() { return keywords; }
-    public void setKeywords(Set<String> keywords) { this.keywords = keywords; }
+    // keywords getter/setter removed
 
     public Integer getYear() { return year; }
     public void setYear(Integer year) { this.year = year; }
@@ -39,12 +38,12 @@ public class SearchFilters {
     public void setReadingStatus(Set<ReadingStatus> readingStatus) { this.readingStatus = readingStatus; }
 
     public boolean isActive() {
-        return !authors.isEmpty() || !journals.isEmpty() || !keywords.isEmpty() ||
+        return !authors.isEmpty() || !journals.isEmpty() || 
                year != null || !readingStatus.isEmpty();
     }
 
     public int getActiveFilterCount() {
-        int count = authors.size() + journals.size() + keywords.size() + readingStatus.size();
+        int count = authors.size() + journals.size() + readingStatus.size();
         if (year != null) count++;
         return count;
     }

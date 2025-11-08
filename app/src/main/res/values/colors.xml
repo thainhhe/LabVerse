@@ -34,4 +34,8 @@
     <color name="background_light">#FAFAFA</color>
     <color name="background_card">#FFFFFF</color>
     <color name="divider">#E0E0E0</color>
+
+    <!-- Icon Colors -->
+    <color name="red">#F44336</color>
+    <color name="grey">#9E9E9E</color>
 </resources>

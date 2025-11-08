@@ -1,0 +1,7 @@
+[33m0a03a6a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mthanhdinh[m[33m)[m Fix: Add missing string resource and FAB to Dashboard
+[33m1be7035[m Refactor(Dashboard): Implement tab layout and remove redundant header
+[33m86b3507[m firrst commit
+[33mf7f0a6a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m add and config firebase
+[33me89e826[m add entity and dao
+[33md17015e[m config gradle
+[33m6ae2593[m Initial commit

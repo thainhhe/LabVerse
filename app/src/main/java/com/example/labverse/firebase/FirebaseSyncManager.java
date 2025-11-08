@@ -38,38 +38,49 @@ public class FirebaseSyncManager {
     public void syncPaperToFirebase(PaperEntity paper) {
         FirebasePaper firebasePaper = convertToFirebasePaper(paper);
 
-        firestore.collection(PAPERS_COLLECTION)
-                .document(paper.getPaperId())
+        // Corrected path: users/{userId}/papers/{paperId}
+        firestore.collection(USERS_COLLECTION).document(paper.userId)
+                .collection(PAPERS_COLLECTION)
+                .document(paper.paperId)
                 .set(firebasePaper.toMap())
                 .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Paper synced to Firebase: " + paper.getPaperId());
-                    updateLocalSyncStatus(paper.getPaperId(), "synced");
+                    Log.d(TAG, "Paper synced to Firebase: " + paper.paperId);
+                    updateLocalSyncStatus(paper.paperId, "synced");
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to sync paper: " + e.getMessage());
-                    updateLocalSyncStatus(paper.getPaperId(), "failed");
+                    updateLocalSyncStatus(paper.paperId, "failed");
                 });
     }
 
     public void syncPapersFromFirebase(String userId) {
-        firestore.collection(PAPERS_COLLECTION)
-                .whereEqualTo("userId", userId)
+        // Corrected path: users/{userId}/papers
+        firestore.collection(USERS_COLLECTION).document(userId)
+                .collection(PAPERS_COLLECTION)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
-                        for (DocumentSnapshot document : task.getResult()) {
-                            FirebasePaper firebasePaper = document.toObject(FirebasePaper.class);
-                            if (firebasePaper != null) {
-                                PaperEntity localPaper = convertToPaperEntity(firebasePaper);
-                                LabVerseDatabase.databaseWriteExecutor.execute(() -> {
-                                    database.paperDao().insert(localPaper);
-                                });
+                        LabVerseDatabase.databaseWriteExecutor.execute(() -> {
+                            for (DocumentSnapshot document : task.getResult()) {
+                                FirebasePaper firebasePaper = document.toObject(FirebasePaper.class);
+                                if (firebasePaper != null && firebasePaper.getPaperId() != null) {
+                                    // Check if paper already exists before inserting
+                                    PaperEntity existingPaper = database.paperDao().getPaperByIdSync(firebasePaper.getPaperId());
+                                    if (existingPaper == null) {
+                                        PaperEntity localPaper = convertToPaperEntity(firebasePaper, userId);
+                                        database.paperDao().insert(localPaper);
+                                        Log.d(TAG, "New paper from Firebase inserted: " + localPaper.paperId);
+                                    } else {
+                                        Log.d(TAG, "Paper from Firebase already exists, skipping: " + existingPaper.paperId);
+                                    }
+                                }
                             }
-                        }
-                        Log.d(TAG, "Papers synced from Firebase");
+                        });
+                        Log.d(TAG, "Finished syncing papers from Firebase.");
                     }
                 });
     }
+
 
     // ==================== SYNC COLLECTIONS ====================
     public void syncCollectionToFirebase(CollectionEntity collection) {
@@ -168,42 +179,41 @@ public class FirebaseSyncManager {
 
     // ==================== CONVERSION METHODS ====================
     private FirebasePaper convertToFirebasePaper(PaperEntity entity) {
-        FirebasePaper paper = new FirebasePaper(entity.getPaperId(), entity.getUserId(), entity.getTitle());
-        paper.setAuthors(entity.getAuthors());
-        paper.setJournal(entity.getJournal());
-        paper.setYear(entity.getYear());
-        paper.setDoi(entity.getDoi());
-        paper.setAbstractText(entity.getAbstractText());
-        paper.setPdfUrl(entity.getPdfUrl());
-        paper.setStatus(entity.getStatus());
-        paper.setPriority(entity.getPriority());
-        paper.setFavorite(entity.isFavorite());
-        paper.setCurrentPage(entity.getCurrentPage());
-        paper.setTotalPages(entity.getTotalPages());
+        FirebasePaper paper = new FirebasePaper(entity.paperId, entity.userId, entity.title);
+        paper.setAuthors(entity.authors);
+        paper.setJournal(entity.journal);
+        paper.setYear(entity.year);
+        paper.setDoi(entity.doi);
+        paper.setAbstractText(entity.abstractText);
+        paper.setPdfUrl(entity.pdfUrl);
+        paper.setStatus(entity.status);
+        paper.setPriority(entity.priority);
+        paper.setFavorite(entity.isFavorite);
+        paper.setCurrentPage(entity.currentPage);
+        paper.setTotalPages(entity.totalPages);
         return paper;
     }
 
-    private PaperEntity convertToPaperEntity(FirebasePaper firebasePaper) {
-        PaperEntity entity = new PaperEntity(
-                firebasePaper.getPaperId(),
-                firebasePaper.getUserId(),
-                firebasePaper.getTitle()
-        );
-        entity.setAuthors(firebasePaper.getAuthors());
-        entity.setJournal(firebasePaper.getJournal());
-        entity.setYear(firebasePaper.getYear());
-        entity.setDoi(firebasePaper.getDoi());
-        entity.setAbstractText(firebasePaper.getAbstractText());
-        entity.setPdfUrl(firebasePaper.getPdfUrl());
-        entity.setStatus(firebasePaper.getStatus());
-        entity.setPriority(firebasePaper.getPriority());
-        entity.setFavorite(firebasePaper.isFavorite());
-        entity.setCurrentPage(firebasePaper.getCurrentPage());
-        entity.setTotalPages(firebasePaper.getTotalPages());
-        entity.setSyncStatus("synced");
-        entity.setLastSync(System.currentTimeMillis());
+    private PaperEntity convertToPaperEntity(FirebasePaper firebasePaper, String userId) {
+        PaperEntity entity = new PaperEntity();
+        entity.paperId = firebasePaper.getPaperId();
+        entity.userId = userId; // Use the provided userId
+        entity.title = firebasePaper.getTitle();
+        entity.authors = firebasePaper.getAuthors();
+        entity.journal = firebasePaper.getJournal();
+        entity.year = firebasePaper.getYear();
+        entity.doi = firebasePaper.getDoi();
+        entity.abstractText = firebasePaper.getAbstractText();
+        entity.pdfUrl = firebasePaper.getPdfUrl();
+        entity.status = firebasePaper.getStatus();
+        entity.priority = firebasePaper.getPriority();
+        entity.isFavorite = firebasePaper.isFavorite();
+        entity.currentPage = firebasePaper.getCurrentPage();
+        entity.totalPages = firebasePaper.getTotalPages();
+        entity.syncStatus = "synced";
+        entity.lastSync = System.currentTimeMillis();
         if (firebasePaper.getDateAdded() != null) {
-            entity.setDateAdded(firebasePaper.getDateAdded().toDate().getTime());
+            entity.dateAdded = firebasePaper.getDateAdded().toDate().getTime();
         }
         return entity;
     }

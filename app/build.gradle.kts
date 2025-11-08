@@ -35,6 +35,11 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 dependencies {
@@ -58,6 +63,7 @@ dependencies {
 
     // Room Database
     implementation("androidx.room:room-runtime:2.6.0")
+    kapt("androidx.room:room-compiler:2.6.0")
 
     // WorkManager
     implementation("androidx.work:work-runtime:2.9.0")
@@ -76,9 +82,6 @@ dependencies {
     // BibTeX Parser
     implementation("org.jbibtex:jbibtex:1.0.20")
 
-    // Material Design
-    implementation("com.google.android.material:material:1.10.0")
-
     // Preferences
     implementation("androidx.preference:preference:1.2.1")
 
@@ -96,4 +99,11 @@ dependencies {
     implementation ("com.google.firebase:firebase-auth")
     implementation ("com.google.firebase:firebase-firestore")
     implementation ("com.google.firebase:firebase-storage")
+
+    // Google Sign-In
+    implementation ("com.google.android.gms:play-services-auth:20.7.0")
+
+    // Encrypted SharedPreferences
+    implementation ("androidx.security:security-crypto:1.1.0-alpha06")
+
 }

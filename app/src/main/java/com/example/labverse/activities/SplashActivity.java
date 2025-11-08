@@ -3,44 +3,45 @@ package com.example.labverse.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper; // Import Looper
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.labverse.MainActivity;
-import com.example.labverse.R;
-import com.example.labverse.utils.AuthManager;
+
+import com.example.labverse.MainActivity; // Quan trọng: Đảm bảo import đúng MainActivity
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.FirebaseApp; // Quan trọng: Import FirebaseApp
 
 public class SplashActivity extends AppCompatActivity {
-
-    private static final int SPLASH_DURATION = 2000; // 2 seconds
-    private AuthManager authManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
+        // Không cần setContentView cho màn hình chờ, để nó trống sẽ hiển thị theme của cửa sổ
 
-        authManager = new AuthManager(this);
+        // BƯỚC 1: KHỞI TẠO FIREBASE (Rất quan trọng!)
+        // Đảm bảo Firebase được khởi tạo trước khi sử dụng bất kỳ dịch vụ nào của nó.
+        FirebaseApp.initializeApp(this);
 
-        // Delay for splash screen and then navigate to appropriate screen
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                navigateToNextScreen();
+        // BƯỚC 2: TẠO ĐỘ TRỄ VÀ KIỂM TRA ĐĂNG NHẬP
+        // Sử dụng Handler với Looper.getMainLooper() để đảm bảo an toàn
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            // Lấy người dùng hiện tại từ Firebase
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+            // Điều hướng dựa trên trạng thái đăng nhập
+            if (currentUser != null) {
+                // Người dùng đã đăng nhập, chuyển đến MainActivity
+                // Sử dụng getApplicationContext() để an toàn hơn
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+            } else {
+                // Người dùng chưa đăng nhập, chuyển đến LoginActivity
+                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                startActivity(intent);
             }
-        }, SPLASH_DURATION);
-    }
 
-    private void navigateToNextScreen() {
-        Intent intent;
-
-        if (authManager.isLoggedIn()) {
-            // User is already logged in, go to main activity
-            intent = new Intent(SplashActivity.this, MainActivity.class);
-        } else {
-            // User is not logged in, go to login activity
-            intent = new Intent(SplashActivity.this, LoginActivity.class);
-        }
-
-        startActivity(intent);
-        finish();
+            // Đóng SplashActivity để người dùng không thể quay lại bằng nút Back
+            finish();
+        }, 1500); // Độ trễ 1.5 giây để hiển thị logo (nếu có)
     }
 }

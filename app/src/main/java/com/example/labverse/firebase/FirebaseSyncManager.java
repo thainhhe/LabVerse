@@ -16,6 +16,8 @@ import com.example.labverse.database.entities.*;
 import com.example.labverse.firebase.models.*;
 
 import java.util.List;
+import java.util.Map;
+
 public class FirebaseSyncManager {
     private static final String TAG = "FirebaseSyncManager";
     private FirebaseFirestore firestore;
@@ -89,7 +91,7 @@ public class FirebaseSyncManager {
 
     public void syncCollectionsFromFirebase(String userId) {
         firestore.collection(COLLECTIONS_COLLECTION)
-                .whereEqualTo("createdBy", userId)
+                .whereArrayContains("memberIds", userId)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
@@ -209,32 +211,98 @@ public class FirebaseSyncManager {
     }
 
     private FirebaseCollection convertToFirebaseCollection(CollectionEntity entity) {
-        FirebaseCollection collection = new FirebaseCollection(
-                entity.getCollectionId(),
-                entity.getCreatedBy(),
-                entity.getName()
-        );
+        FirebaseCollection collection = new FirebaseCollection();
+
+        collection.setCollectionId(entity.getCollectionId());
+        collection.setCreatedBy(entity.getCreatedBy());
+        collection.setName(entity.getName());
         collection.setDescription(entity.getDescription());
         collection.setPublic(entity.isPublic());
+        collection.setOwnerId(entity.getOwnerId());
+        collection.setMemberIds(entity.getMemberIds());
         return collection;
     }
 
-    private CollectionEntity convertToCollectionEntity(FirebaseCollection firebaseCollection) {
+    private CollectionEntity convertToCollectionEntity(FirebaseCollection fb) {
+
         CollectionEntity entity = new CollectionEntity(
-                firebaseCollection.getCollectionId(),
-                firebaseCollection.getCreatedBy(),
-                firebaseCollection.getName()
+                fb.getCollectionId(),
+                fb.getName(),
+                fb.getDescription(),
+                fb.getCreatedBy(),
+                fb.getOwnerId(),
+                fb.getMemberIds(),
+                fb.isPublic()
         );
-        entity.setDescription(firebaseCollection.getDescription());
-        entity.setPublic(firebaseCollection.isPublic());
+
         entity.setSyncStatus("synced");
-        if (firebaseCollection.getCreatedAt() != null) {
-            entity.setCreatedAt(firebaseCollection.getCreatedAt().toDate().getTime());
+        if (fb.getCreatedAt() != null) {
+            entity.setCreatedAt(fb.getCreatedAt().toDate().getTime());
         }
-        if (firebaseCollection.getUpdatedAt() != null) {
-            entity.setUpdatedAt(firebaseCollection.getUpdatedAt().toDate().getTime());
+        if (fb.getUpdatedAt() != null) {
+            entity.setUpdatedAt(fb.getUpdatedAt().toDate().getTime());
         }
+
         return entity;
+    }
+
+
+    public void createNewCollectionOnFirebase(String name, String description, boolean isPublic, com.google.firebase.auth.FirebaseUser user, OnCompleteListener<Void> listener) {
+        String newId = firestore.collection(COLLECTIONS_COLLECTION).document().getId();
+        String createdByName = (user.getDisplayName() == null || user.getDisplayName().isEmpty()) ? user.getEmail() : user.getDisplayName();
+
+        List<String> initialMembers = new java.util.ArrayList<>();
+        initialMembers.add(user.getUid());
+
+        FirebaseCollection collection = new FirebaseCollection();
+        collection.setCollectionId(newId);
+        collection.setName(name);
+        collection.setDescription(description);
+        collection.setCreatedBy(createdByName);
+        collection.setOwnerId(user.getUid());
+        collection.setMemberIds(initialMembers);
+
+        collection.setPublic(isPublic);
+
+        firestore.collection(COLLECTIONS_COLLECTION)
+                .document(newId)
+                .set(collection.toMap())
+                .addOnCompleteListener(listener);
+    }
+
+    public void getPapersForCollection(String collectionId, OnCompleteListener<QuerySnapshot> listener) {
+        firestore.collection(COLLECTIONS_COLLECTION).document(collectionId)
+                .collection("papers")
+                .get()
+                .addOnCompleteListener(listener);
+    }
+
+    public void updatePaperStatusInCollection(String collectionId, String paperId, String newStatus, String newPriority, OnCompleteListener<Void> listener) {
+        Map<String, Object> updates = new java.util.HashMap<>();
+        if (newStatus != null) {
+            updates.put("status", newStatus);
+        }
+        if (newPriority != null) {
+            updates.put("priority", newPriority);
+        }
+
+        if (updates.isEmpty()) {
+            return;
+        }
+
+        updates.put("updatedAt", com.google.firebase.firestore.FieldValue.serverTimestamp());
+
+        firestore.collection(COLLECTIONS_COLLECTION).document(collectionId)
+                .collection("papers").document(paperId)
+                .update(updates)
+                .addOnCompleteListener(listener);
+    }
+
+    public void getCollectionsForUser(String userId, OnCompleteListener<QuerySnapshot> listener) {
+        firestore.collection(COLLECTIONS_COLLECTION)
+                .whereArrayContains("memberIds", userId)
+                .get()
+                .addOnCompleteListener(listener);
     }
 
     private FirebaseAnnotation convertToFirebaseAnnotation(AnnotationEntity entity) {

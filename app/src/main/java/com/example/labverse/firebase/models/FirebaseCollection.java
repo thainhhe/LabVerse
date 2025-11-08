@@ -1,20 +1,28 @@
 package com.example.labverse.firebase.models;
+
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.firestore.ServerTimestamp;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 public class FirebaseCollection {
+
     @DocumentId
     private String collectionId;
     private String createdBy;
     private String name;
     private String description;
     private boolean isPublic;
+
     @ServerTimestamp
     private Timestamp createdAt;
     @ServerTimestamp
     private Timestamp updatedAt;
+
+    private String ownerId;
+    private List<String> memberIds;
 
     public FirebaseCollection() {}
 
@@ -25,7 +33,6 @@ public class FirebaseCollection {
         this.isPublic = false;
     }
 
-    // Getters and Setters
     public String getCollectionId() { return collectionId; }
     public void setCollectionId(String collectionId) { this.collectionId = collectionId; }
 
@@ -47,14 +54,33 @@ public class FirebaseCollection {
     public Timestamp getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
 
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public List<String> getMemberIds() {
+        return memberIds;
+    }
+
+    public void setMemberIds(List<String> memberIds) {
+        this.memberIds = memberIds;
+    }
+
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
-        map.put("collectionId", collectionId);
         map.put("createdBy", createdBy);
         map.put("name", name);
         map.put("description", description);
         map.put("isPublic", isPublic);
+        map.put("ownerId", ownerId);
+        map.put("memberIds", memberIds);
+        map.put("createdAt", com.google.firebase.firestore.FieldValue.serverTimestamp());
+        map.put("updatedAt", com.google.firebase.firestore.FieldValue.serverTimestamp());
+
         return map;
     }
 }
-

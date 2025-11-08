@@ -5,15 +5,19 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 import androidx.annotation.NonNull;
+import com.example.labverse.database.Converters;
+import java.util.List;
 
 @Entity(tableName = "collections",
         foreignKeys = @ForeignKey(entity = UserEntity.class,
                 parentColumns = "user_id",
-                childColumns = "created_by",
+                childColumns = "owner_id",
                 onDelete = ForeignKey.CASCADE),
-        indices = {@Index("created_by")})
+        indices = {@Index("created_by"), @Index("owner_id")})
 public class CollectionEntity {
+
     @PrimaryKey
     @NonNull
     @ColumnInfo(name = "collection_id")
@@ -25,7 +29,6 @@ public class CollectionEntity {
 
     @NonNull
     private String name;
-
     private String description;
 
     @ColumnInfo(name = "is_public")
@@ -43,18 +46,39 @@ public class CollectionEntity {
     @ColumnInfo(name = "firebase_id")
     private String firebaseId;
 
-    // Constructor
-    public CollectionEntity(@NonNull String collectionId, @NonNull String createdBy, @NonNull String name) {
+    @NonNull
+    @ColumnInfo(name = "owner_id")
+    private String ownerId;
+
+    @ColumnInfo(name = "member_ids")
+    @TypeConverters(Converters.class)
+    private List<String> memberIds;
+
+
+
+    public CollectionEntity(@NonNull String collectionId,
+                            @NonNull String name,
+                            String description,
+                            @NonNull String createdBy,
+                            @NonNull String ownerId,
+                            List<String> memberIds,
+                            boolean isPublic) {
+
         this.collectionId = collectionId;
-        this.createdBy = createdBy;
         this.name = name;
+        this.description = description;
+        this.createdBy = createdBy;
+        this.ownerId = ownerId;
+        this.memberIds = memberIds;
+        this.isPublic = isPublic;
+
+
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = this.createdAt;
-        this.isPublic = false;
         this.syncStatus = "pending";
     }
 
-    // Getters and Setters
+
     @NonNull
     public String getCollectionId() { return collectionId; }
     public void setCollectionId(@NonNull String collectionId) { this.collectionId = collectionId; }
@@ -84,4 +108,21 @@ public class CollectionEntity {
 
     public String getFirebaseId() { return firebaseId; }
     public void setFirebaseId(String firebaseId) { this.firebaseId = firebaseId; }
+
+
+    @NonNull
+    public String getOwnerId() {
+        return ownerId;
+    }
+    public void setOwnerId(@NonNull String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public List<String> getMemberIds() {
+        return memberIds;
+    }
+    public void setMemberIds(List<String> memberIds) {
+        this.memberIds = memberIds;
+    }
+
 }

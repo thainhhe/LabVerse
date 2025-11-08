@@ -13,6 +13,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.labverse.R;
 import com.example.labverse.activities.PaperDetailActivity;
+import com.example.labverse.database.LabVerseDatabase;
+import com.example.labverse.database.dao.PaperDao;
 import com.example.labverse.models.Paper;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,10 +25,18 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
 
     private List<Paper> paperList;
     private Context context;
+    private PaperDao paperDao;
 
     public PaperAdapter(List<Paper> paperList, Context context) {
         this.paperList = paperList;
         this.context = context;
+        this.paperDao = LabVerseDatabase.getDatabase(context).paperDao();
+    }
+
+    public void setPapers(List<Paper> newPaperList) {
+        this.paperList.clear();
+        this.paperList.addAll(newPaperList);
+        notifyDataSetChanged(); // This tells the adapter to refresh the view
     }
 
     @NonNull
@@ -51,7 +61,7 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
         setPriorityIndicator(holder, paper.getPriority());
 
         // Set favorite indicator
-        holder.ivFavorite.setVisibility(paper.isFavorite() ? View.VISIBLE : View.GONE);
+        updateFavoriteIcon(holder, paper.isFavorite());
 
         // Set date added
         if (paper.getDateAdded() > 0) {
@@ -60,17 +70,35 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
         }
 
         // Set click listener
-        holder.cardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, PaperDetailActivity.class);
-                intent.putExtra("paper", paper);
-                context.startActivity(intent);
-            }
+        holder.cardView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, PaperDetailActivity.class);
+            intent.putExtra("paper", paper);
+            context.startActivity(intent);
+        });
+
+        holder.ivFavorite.setOnClickListener(v -> {
+            paper.setFavorite(!paper.isFavorite());
+            updateFavoriteIcon(holder, paper.isFavorite());
+            LabVerseDatabase.databaseWriteExecutor.execute(() -> {
+                paperDao.updateFavorite(paper.getId(), paper.isFavorite());
+            });
         });
     }
 
+    private void updateFavoriteIcon(PaperViewHolder holder, boolean isFavorite) {
+        if (isFavorite) {
+            holder.ivFavorite.setImageResource(R.drawable.ic_favorite);
+            holder.ivFavorite.setColorFilter(ContextCompat.getColor(context, R.color.red));
+        } else {
+            holder.ivFavorite.setImageResource(R.drawable.ic_favorite_border);
+            holder.ivFavorite.setColorFilter(ContextCompat.getColor(context, R.color.grey));
+        }
+    }
+
     private void setStatusIndicator(PaperViewHolder holder, String status) {
+        if (status == null) {
+            status = "unknown"; // Default to unknown if status is null
+        }
         switch (status.toLowerCase()) {
             case "unread":
                 holder.viewStatusIndicator.setBackgroundColor(ContextCompat.getColor(context, R.color.status_unread));
@@ -90,6 +118,7 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
             default:
                 holder.viewStatusIndicator.setBackgroundColor(ContextCompat.getColor(context, R.color.status_unread));
                 holder.tvStatus.setText("Unknown");
+                holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.status_unread));
                 break;
         }
     }

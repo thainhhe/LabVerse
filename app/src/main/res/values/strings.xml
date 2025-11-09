@@ -25,6 +25,7 @@
     <!-- Paper Management -->
     <string name="add_paper">Add Paper</string>
     <string name="import_paper">Import Paper</string>
+    <string name="import_new_paper">Import New Paper</string>
     <string name="upload_pdf">Upload PDF</string>
     <string name="import_bibtex">Import BibTeX</string>
     <string name="manual_entry">Manual Entry</string>

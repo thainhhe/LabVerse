@@ -40,6 +40,11 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 dependencies {
@@ -81,9 +86,6 @@ dependencies {
 
     // BibTeX Parser
     implementation("org.jbibtex:jbibtex:1.0.20")
-
-    // Material Design
-    implementation("com.google.android.material:material:1.10.0")
 
     // Preferences
     implementation("androidx.preference:preference:1.2.1")

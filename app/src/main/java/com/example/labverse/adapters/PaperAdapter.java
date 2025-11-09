@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -15,6 +17,7 @@ import com.example.labverse.R;
 import com.example.labverse.activities.PaperDetailActivity;
 import com.example.labverse.database.LabVerseDatabase;
 import com.example.labverse.database.dao.PaperDao;
+import com.example.labverse.database.entities.PaperEntity;
 import com.example.labverse.models.Paper;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -68,6 +71,9 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
             SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
             holder.tvDateAdded.setText(sdf.format(new Date(paper.getDateAdded())));
         }
+
+        // Set reading progress
+        updateReadingProgress(holder, paper.getId());
 
         // Set click listener
         holder.cardView.setOnClickListener(v -> {
@@ -150,6 +156,31 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
         }
     }
 
+    private void updateReadingProgress(PaperViewHolder holder, String paperId) {
+        // Load paper entity to get progress information
+        LabVerseDatabase.databaseWriteExecutor.execute(() -> {
+            PaperEntity paperEntity = paperDao.getPaperByIdSync(paperId);
+            if (paperEntity != null && paperEntity.totalPages > 0 && paperEntity.currentPage > 0) {
+                int currentPage = paperEntity.currentPage;
+                int totalPages = paperEntity.totalPages;
+                int progress = (int) ((currentPage / (float) totalPages) * 100);
+
+                // Update UI on main thread
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                    holder.layoutProgress.setVisibility(View.VISIBLE);
+                    holder.progressBar.setMax(100);
+                    holder.progressBar.setProgress(progress);
+                    holder.tvProgressPercent.setText(progress + "%");
+                    holder.tvProgressText.setText("Page " + currentPage + " of " + totalPages);
+                });
+            } else {
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                    holder.layoutProgress.setVisibility(View.GONE);
+                });
+            }
+        });
+    }
+
     @Override
     public int getItemCount() {
         return paperList.size();
@@ -158,8 +189,11 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
     public static class PaperViewHolder extends RecyclerView.ViewHolder {
         CardView cardView;
         TextView tvTitle, tvAuthors, tvJournal, tvStatus, tvPriority, tvDateAdded;
+        TextView tvProgressPercent, tvProgressText;
         ImageView ivFavorite;
         View viewStatusIndicator;
+        LinearLayout layoutProgress;
+        ProgressBar progressBar;
 
         public PaperViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -172,6 +206,10 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperViewHol
             tvDateAdded = itemView.findViewById(R.id.tv_date_added);
             ivFavorite = itemView.findViewById(R.id.iv_favorite);
             viewStatusIndicator = itemView.findViewById(R.id.view_status_indicator);
+            layoutProgress = itemView.findViewById(R.id.layout_progress);
+            progressBar = itemView.findViewById(R.id.progress_bar_reading);
+            tvProgressPercent = itemView.findViewById(R.id.tv_progress_percent);
+            tvProgressText = itemView.findViewById(R.id.tv_progress_text);
         }
     }
 }

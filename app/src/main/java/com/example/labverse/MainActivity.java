@@ -29,7 +29,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
-    private static final String TAG = "MainActivity"; // For logging
+    private static final String TAG = "MainActivity";
     private BottomNavigationView bottomNavigationView;
     private FloatingActionButton fabAddPaper;
     private FirebaseAuthManager authManager;

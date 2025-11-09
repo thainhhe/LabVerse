@@ -108,4 +108,10 @@ public interface PaperDao {
 
     @Query("UPDATE papers SET status = :status WHERE paper_id IN (:paperIds)")
     void updateStatusForPapers(List<String> paperIds, String status);
+
+    @Query("UPDATE papers SET status = :newStatus, priority = :newPriority WHERE paper_id = :paperId")
+    void updateStatusAndPriority(String paperId, String newStatus, String newPriority);
+
+    @Query("SELECT * FROM papers WHERE user_id = :userId ORDER BY date_added DESC")
+    LiveData<List<PaperEntity>> getAllPapersForUser(String userId);
 }

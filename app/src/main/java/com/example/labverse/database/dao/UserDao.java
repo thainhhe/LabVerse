@@ -36,4 +36,7 @@ public interface UserDao {
 
     @Query("UPDATE users SET last_login = :lastLogin WHERE user_id = :userId")
     void updateLastLogin(String userId, long lastLogin);
+
+    @Query("SELECT user_id FROM users WHERE email = :email LIMIT 1")
+    String findUserIdByEmail(String email);
 }

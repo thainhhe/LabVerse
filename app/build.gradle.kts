@@ -5,6 +5,11 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+//plugins {
+//    id("com.google.gms.google-services")
+//}
+
+
 android {
     namespace = "com.example.labverse"
     compileSdk = 35

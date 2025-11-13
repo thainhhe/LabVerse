@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.example.labverse.database.dao.*;
 import com.example.labverse.database.entities.*;
-
+import androidx.room.TypeConverters;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -26,8 +26,11 @@ import java.util.concurrent.Executors;
         ReadingListEntity.class,
         ReadingListPaperEntity.class,
         CommentEntity.class,
-        CitationEntity.class
-}, version = 1, exportSchema = false)
+        CitationEntity.class,
+        CollectionPaperCrossRef.class
+}, version = 2, exportSchema = false)
+
+@TypeConverters({Converters.class})
 public abstract class LabVerseDatabase extends RoomDatabase {
 
     // DAOs

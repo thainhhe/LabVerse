@@ -112,6 +112,7 @@
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.LabVerse.NoActionBar"/>
 
+        <activity android:name=".activities.SelectPaperActivity" />
 
         <!-- File Provider để chia sẻ file một cách an toàn -->
         <provider

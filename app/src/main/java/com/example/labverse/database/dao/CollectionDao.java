@@ -3,6 +3,8 @@ package com.example.labverse.database.dao;
 import androidx.lifecycle.LiveData;
 import androidx.room.*;
 import com.example.labverse.database.entities.CollectionEntity;
+import com.example.labverse.database.entities.CollectionPaperCrossRef;
+import com.example.labverse.database.relations.CollectionWithPapers;
 import java.util.List;
 
 @Dao
@@ -16,8 +18,11 @@ public interface CollectionDao {
     @Delete
     void delete(CollectionEntity collection);
 
+    @Query("SELECT * FROM collections WHERE member_ids LIKE '%' || :userId || '%' ORDER BY created_at DESC")
+    LiveData<List<CollectionEntity>> getCollectionsForMember(String userId);
+
     @Query("SELECT * FROM collections WHERE created_by = :userId ORDER BY created_at DESC")
-    LiveData<List<CollectionEntity>> getCollectionsByUser(String userId);
+    LiveData<List<CollectionEntity>> getCollectionsOwnedByUser(String userId);
 
     @Query("SELECT * FROM collections WHERE collection_id = :collectionId")
     LiveData<CollectionEntity> getCollectionById(String collectionId);
@@ -39,4 +44,21 @@ public interface CollectionDao {
 
     @Query("DELETE FROM collections WHERE created_by = :userId")
     void deleteAllByUser(String userId);
+
+    @Transaction
+    @Query("SELECT * FROM collections WHERE collection_id = :collectionId")
+    LiveData<CollectionWithPapers> getCollectionWithPapers(String collectionId);
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    void addPaperToCollection(CollectionPaperCrossRef crossRef);
+
+    @Transaction
+    @Query("SELECT * FROM collections WHERE member_ids LIKE '%' || :userId || '%' ORDER BY created_at DESC")
+    LiveData<List<CollectionWithPapers>> getCollectionsWithPapersForMember(String userId);
+
+    @Query("UPDATE collections SET member_ids = :memberIds WHERE collection_id = :collectionId")
+    void updateMemberIds(String collectionId, List<String> memberIds);
+
+    @Query("SELECT member_ids FROM collections WHERE collection_id = :collectionId")
+    List<String> getMemberIdsSync(String collectionId);
 }
